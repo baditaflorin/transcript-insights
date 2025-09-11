@@ -2,16 +2,20 @@
 
 import {run} from '@/ai/flows/dynamic-analysis-flow';
 import type {
-  AnalyzeConversationPerspectivesOutput,
-  ExtractActionItemsOutput,
-  IdentifyOpenQuestionsOutput,
-  SummarizeTranscriptOutput,
-  TimelineOfKeyMomentsOutput,
-  RisksAndConcernsOutput,
-  OpportunitiesAndIdeasOutput,
-  ToneAndSentimentOutput,
+  DynamicAnalysisInput
+} from '@/ai/flows/dynamic-analysis-flow';
+import {
+  AnalysisType,
+  type AnalyzeConversationPerspectivesOutput,
+  type ExtractActionItemsOutput,
+  type IdentifyOpenQuestionsOutput,
+  type SummarizeTranscriptOutput,
+  type TimelineOfKeyMomentsOutput,
+  type RisksAndConcernsOutput,
+  type OpportunitiesAndIdeasOutput,
+  type ToneAndSentimentOutput,
 } from '@/ai/flows/prompts';
-import {AnalysisType} from '@/ai/flows/prompts';
+
 
 export type {
   AnalyzeConversationPerspectivesOutput,
@@ -61,8 +65,8 @@ export async function analyzeTranscript(
   if (selectedAnalyses.length === 0) {
     return {error: 'No analysis types were selected.'};
   }
-   if (provider === 'openai' && !apiKey) {
-    return { error: 'API key is missing for OpenAI.' };
+   if (!apiKey) {
+    return { error: 'API key is missing.' };
   }
 
   try {

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Loader2, Upload, RotateCw, KeyRound, BrainCircuit } from 'lucide-react';
+import { Loader2, Upload, KeyRound, BrainCircuit } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -127,8 +127,8 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
       return;
     }
     
-    if (data.provider === 'openai' && !data.apiKey) {
-      const errorMessage = 'Please enter your OpenAI API key.';
+    if (!data.apiKey) {
+      const errorMessage = `Please enter your ${provider === 'google' ? 'Google AI' : 'OpenAI'} API key.`;
       toast({
         variant: 'destructive',
         title: 'API Key Required',
@@ -157,7 +157,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
       });
     });
 
-    if ('error' in result) {
+    if (result && 'error' in result) {
       toast({
         variant: 'destructive',
         title: 'Analysis Failed',
@@ -166,7 +166,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
       setError(result.error);
       setResults(null);
     } else {
-      setResults(result);
+      setResults(result as AnalysisResult);
       setError(null);
     }
     setIsLoading(false);
@@ -187,7 +187,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                   <Select
                     value={form.watch('provider')}
                     onValueChange={(value) => form.setValue('provider', value as 'google' | 'openai')}
-                    disabled={isLoading}
                   >
                     <SelectTrigger id="provider">
                       <SelectValue placeholder="Select a provider" />
@@ -201,14 +200,13 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                  <div className="space-y-2">
                    <Label htmlFor="apiKey">
                     <KeyRound className="inline-block mr-2 h-4 w-4" />
-                     API Key {provider === 'google' ? '(Optional)' : '(Required)'}
+                     API Key (Required)
                    </Label>
                    <Input
                      id="apiKey"
                      type="password"
                      placeholder={provider === 'google' ? "Enter your Google AI API Key" : "Enter your OpenAI API Key"}
                      {...form.register('apiKey')}
-                     readOnly={isLoading}
                    />
                  </div>
               </div>
@@ -216,8 +214,8 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 rounded-none h-12">
-              <TabsTrigger value="paste" disabled={isLoading}>Paste Text</TabsTrigger>
-              <TabsTrigger value="upload" disabled={isLoading}>Upload File</TabsTrigger>
+              <TabsTrigger value="paste" >Paste Text</TabsTrigger>
+              <TabsTrigger value="upload" >Upload File</TabsTrigger>
             </TabsList>
             <div className="p-6">
               <TabsContent value="paste" className="m-0">
@@ -225,14 +223,13 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                   placeholder="Paste your meeting or conversation transcript here..."
                   className="min-h-[200px] text-base"
                   {...form.register('transcript')}
-                  readOnly={isLoading}
                 />
               </TabsContent>
               <TabsContent value="upload" className="m-0">
                 <div className="flex flex-col items-center justify-center w-full gap-4">
                   <Label
                     htmlFor="file-upload"
-                    className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg bg-card ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-muted'}`}
+                    className={'flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg bg-card cursor-pointer hover:bg-muted'}
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
@@ -241,7 +238,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                       </p>
                       <p className="text-xs text-muted-foreground">TXT, MD or any text file</p>
                     </div>
-                    <Input id="file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".txt,.md,text/plain" disabled={isLoading} />
+                    <Input id="file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".txt,.md,text/plain" />
                   </Label>
                   {fileName && <p className="text-sm text-muted-foreground">File: {fileName}</p>}
                 </div>
@@ -256,7 +253,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                         id={analysis}
                         checked={selectedAnalyses.includes(analysis)}
                         onCheckedChange={() => handleAnalysisToggle(analysis)}
-                        disabled={isLoading}
                       />
                       <label
                         htmlFor={analysis}
