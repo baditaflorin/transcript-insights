@@ -17,8 +17,8 @@ import {
   defineRisksPrompt,
   defineOpportunitiesPrompt,
   defineSentimentPrompt,
-  AnalysisType,
 } from './prompts';
+import type { AnalysisType } from './prompts';
 
 const DynamicAnalysisInputSchema = z.object({
   transcript: z.string(),
@@ -31,8 +31,7 @@ export type DynamicAnalysisInput = z.infer<typeof DynamicAnalysisInputSchema>;
 
 
 export async function run(
-  input: DynamicAnalysisInput,
-  onChunk?: (chunk: any) => void
+  input: DynamicAnalysisInput
 ) {
   const {provider, apiKey} = input;
   const plugins = [];
@@ -43,7 +42,8 @@ export async function run(
     plugins.push(openAI({apiKey}));
     model = 'openai/gpt-4o-mini';
   } else {
-    plugins.push(googleAI(apiKey ? {apiKey} : undefined));
+    if (!apiKey) throw new Error("Google AI API key is required.");
+    plugins.push(googleAI({apiKey}));
     model = 'googleai/gemini-2.5-flash';
   }
 
@@ -82,11 +82,7 @@ export async function run(
         }
 
         try {
-          const {response} = await prompt.stream({transcript});
-          const output = await response;
-          if (onChunk) {
-            onChunk({type, data: output});
-          }
+          const {output} = await prompt({transcript});
           return {type, data: output};
         } catch (e: any) {
           console.error(`Error in '${type}' analysis:`, e.message);

@@ -7,13 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AnalysisResult } from '@/app/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import type { StreamingAnalysisResult, AnalysisType } from '@/app/page';
+import type { AnalysisType } from '@/ai/flows/prompts';
 import Markdown from 'react-markdown';
 import { useMemo } from 'react';
 
 interface AnalysisResultsProps {
   results: AnalysisResult | null;
-  streamingResults: StreamingAnalysisResult | null;
   isLoading: boolean;
   error: string | null;
   selectedAnalyses: AnalysisType[];
@@ -109,7 +108,7 @@ const analysisConfig: Record<AnalysisType, { title: string; description: string;
     sentiment: { title: "Tone & Sentiment", description: "Analysis of the conversation's tone and sentiment.", icon: Smile, filename: "sentiment.md", contentKey: 'sentiment', dataKey: (res) => (res.sentiment && 'sentiment' in res.sentiment) ? res.sentiment.sentiment : undefined, errorKey: (res) => (res.sentiment && 'error' in res.sentiment) ? res.sentiment.error : undefined },
 };
 
-export default function AnalysisResults({ results, streamingResults, isLoading, error, selectedAnalyses }: AnalysisResultsProps) {
+export default function AnalysisResults({ results, isLoading, error, selectedAnalyses }: AnalysisResultsProps) {
   if (error) {
     return (
         <Alert variant="destructive" className="shadow-md">
@@ -125,8 +124,7 @@ export default function AnalysisResults({ results, streamingResults, isLoading, 
     );
   }
 
-  const displayResults = results || streamingResults;
-  const showPlaceholder = !displayResults && !isLoading;
+  const showPlaceholder = !results && !isLoading;
 
   const visibleTabs = useMemo(() => {
     return (Object.keys(analysisConfig) as AnalysisType[]).filter(key => selectedAnalyses.includes(key));
@@ -176,9 +174,9 @@ export default function AnalysisResults({ results, streamingResults, isLoading, 
       <div className="mt-4">
         {visibleTabs.map(type => {
             const config = analysisConfig[type];
-            const resultData = displayResults ? displayResults[config.contentKey] : null;
-            const content = displayResults ? config.dataKey(displayResults as AnalysisResult) : null;
-            const tabError = displayResults ? config.errorKey(displayResults as AnalysisResult) : null;
+            const resultData = results ? results[config.contentKey] : null;
+            const content = results ? config.dataKey(results as AnalysisResult) : null;
+            const tabError = results ? config.errorKey(results as AnalysisResult) : null;
             const isTabLoading = isLoading && !resultData;
             return (
                 <TabsContent key={type} value={type} className="m-0">

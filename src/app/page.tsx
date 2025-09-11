@@ -6,14 +6,6 @@ import TranscriptForm from '@/components/app/transcript-form';
 import AnalysisResults from '@/components/app/analysis-results';
 import {
   AnalysisResult,
-  AnalyzeConversationPerspectivesOutput,
-  ExtractActionItemsOutput,
-  IdentifyOpenQuestionsOutput,
-  SummarizeTranscriptOutput,
-  TimelineOfKeyMomentsOutput,
-  RisksAndConcernsOutput,
-  OpportunitiesAndIdeasOutput,
-  ToneAndSentimentOutput,
 } from './actions';
 import { AnalysisType } from '@/ai/flows/prompts';
 
@@ -21,29 +13,14 @@ import { AnalysisType } from '@/ai/flows/prompts';
 export type { AnalysisType };
 export const analysisTypes = Object.values(AnalysisType);
 
-type ErrorResult = {error: string};
-
-export type StreamingAnalysisResult = {
-  perspectives: AnalyzeConversationPerspectivesOutput | ErrorResult | null;
-  actionItems: ExtractActionItemsOutput | ErrorResult | null;
-  openQuestions: IdentifyOpenQuestionsOutput | ErrorResult | null;
-  summary: SummarizeTranscriptOutput | ErrorResult | null;
-  timeline: TimelineOfKeyMomentsOutput | ErrorResult | null;
-  risks: RisksAndConcernsOutput | ErrorResult | null;
-  opportunities: OpportunitiesAndIdeasOutput | ErrorResult | null;
-  sentiment: ToneAndSentimentOutput | ErrorResult | null;
-};
-
 export default function Home() {
   const [results, setResults] = useState<AnalysisResult | null>(null);
-  const [streamingResults, setStreamingResults] = useState<StreamingAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedAnalyses, setSelectedAnalyses] = useState<(typeof analysisTypes)[number][]>(['summary', 'perspectives', 'actionItems', 'openQuestions']);
 
   const handleReset = () => {
     setResults(null);
-    setStreamingResults(null);
     setError(null);
   };
 
@@ -59,7 +36,6 @@ export default function Home() {
               setIsLoading={setIsLoading}
               isLoading={isLoading}
               setError={setError}
-              setStreamingResults={setStreamingResults}
               onReset={handleReset}
               selectedAnalyses={selectedAnalyses}
               setSelectedAnalyses={setSelectedAnalyses}
@@ -69,7 +45,6 @@ export default function Home() {
              <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
             <AnalysisResults
               results={results}
-              streamingResults={streamingResults}
               isLoading={isLoading}
               error={error}
               selectedAnalyses={selectedAnalyses}

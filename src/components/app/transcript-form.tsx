@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { analyzeTranscript, type AnalysisResult } from '@/app/actions';
 import { Card, CardContent } from '@/components/ui/card';
-import { StreamingAnalysisResult, analysisTypes, AnalysisType } from '@/app/page';
+import { analysisTypes, type AnalysisType } from '@/app/page';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 const formSchema = z.object({
@@ -29,7 +29,6 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface TranscriptFormProps {
   setResults: (results: AnalysisResult | null) => void;
-  setStreamingResults: (results: StreamingAnalysisResult | null) => void;
   setIsLoading: (isLoading: boolean) => void;
   isLoading: boolean;
   setError: (error: string | null) => void;
@@ -50,7 +49,7 @@ const analysisLabels: Record<AnalysisType, string> = {
 };
 
 
-export default function TranscriptForm({ setResults, setIsLoading, isLoading, setError, setStreamingResults, onReset, selectedAnalyses, setSelectedAnalyses }: TranscriptFormProps) {
+export default function TranscriptForm({ setResults, setIsLoading, isLoading, setError, onReset, selectedAnalyses, setSelectedAnalyses }: TranscriptFormProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('paste');
   const [fileName, setFileName] = useState('');
@@ -140,22 +139,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
     }
 
 
-    const result = await analyzeTranscript(transcriptText, selectedAnalyses, data.provider, data.apiKey, (chunk) => {
-      setStreamingResults(prev => {
-        const newResults: StreamingAnalysisResult = prev ? {...prev} : {
-            perspectives: null,
-            actionItems: null,
-            openQuestions: null,
-            summary: null,
-            timeline: null,
-            risks: null,
-            opportunities: null,
-            sentiment: null,
-        };
-        (newResults as any)[chunk.type] = chunk.data;
-        return newResults;
-      });
-    });
+    const result = await analyzeTranscript(transcriptText, selectedAnalyses, data.provider, data.apiKey);
 
     if (result && 'error' in result) {
       toast({
