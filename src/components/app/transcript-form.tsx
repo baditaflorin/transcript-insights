@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -15,13 +14,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { analyzeTranscript, type AnalysisResult } from '@/app/actions';
 import { Card, CardContent } from '@/components/ui/card';
-import { analysisTypes, type AnalysisType } from '@/app/page';
+import { analysisTypes } from '@/app/page';
+import type { AnalysisType } from '@/ai/flows/prompts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { useState } from 'react';
 
 const formSchema = z.object({
   transcript: z.string().optional(),
   file: z.any().optional(),
-  apiKey: z.string().optional(),
+  apiKey: z.string(),
   provider: z.enum(['google', 'openai']).default('google'),
 });
 
@@ -46,6 +47,10 @@ const analysisLabels: Record<AnalysisType, string> = {
     risks: 'Risks & Concerns',
     opportunities: 'Opportunities',
     sentiment: 'Sentiment',
+    decisions: 'Key Decisions',
+    stakeholders: 'Stakeholder Map',
+    knowledgeGaps: 'Knowledge Gaps',
+    communicationPatterns: 'Comm. Patterns',
 };
 
 
@@ -242,7 +247,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                         htmlFor={analysis}
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
-                        {analysisLabels[analysis]}
+                        {analysisLabels[analysis as AnalysisType]}
                       </label>
                     </div>
                   ))}

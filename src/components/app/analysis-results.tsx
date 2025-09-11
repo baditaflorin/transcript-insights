@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckSquare, Download, MessageCircleQuestion, Users, AlertTriangle, FileText, Clock, ShieldAlert, Zap, Smile } from 'lucide-react';
+import { CheckSquare, Download, MessageCircleQuestion, Users, AlertTriangle, FileText, Clock, ShieldAlert, Zap, Smile, Gavel, Network, Lightbulb, BarChartHorizontal } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -106,6 +106,10 @@ const analysisConfig: Record<(typeof AnalysisType)[keyof typeof AnalysisType], {
     risks: { title: "Risks & Concerns", description: "Identified risks, concerns, or objections.", icon: ShieldAlert, filename: "risks_concerns.md", contentKey: 'risks', dataKey: (res) => (res.risks && 'risksAndConcerns' in res.risks) ? res.risks.risksAndConcerns : undefined, errorKey: (res) => (res.risks && 'error' in res.risks) ? res.risks.error : undefined },
     opportunities: { title: "Opportunities & Ideas", description: "Opportunities, ideas, or suggestions raised.", icon: Zap, filename: "opportunities.md", contentKey: 'opportunities', dataKey: (res) => (res.opportunities && 'opportunitiesAndIdeas' in res.opportunities) ? res.opportunities.opportunitiesAndIdeas : undefined, errorKey: (res) => (res.opportunities && 'error' in res.opportunities) ? res.opportunities.error : undefined },
     sentiment: { title: "Tone & Sentiment", description: "Analysis of the conversation's tone and sentiment.", icon: Smile, filename: "sentiment.md", contentKey: 'sentiment', dataKey: (res) => (res.sentiment && 'sentiment' in res.sentiment) ? res.sentiment.sentiment : undefined, errorKey: (res) => (res.sentiment && 'error' in res.sentiment) ? res.sentiment.error : undefined },
+    decisions: { title: "Key Decisions", description: "Specific decisions and commitments made.", icon: Gavel, filename: "decisions.md", contentKey: 'decisions', dataKey: (res) => (res.decisions && 'decisions' in res.decisions) ? res.decisions.decisions : undefined, errorKey: (res) => (res.decisions && 'error' in res.decisions) ? res.decisions.error : undefined },
+    stakeholders: { title: "Stakeholder Map", description: "People, roles, and relationships mentioned.", icon: Network, filename: "stakeholders.md", contentKey: 'stakeholders', dataKey: (res) => (res.stakeholders && 'stakeholders' in res.stakeholders) ? res.stakeholders.stakeholders : undefined, errorKey: (res) => (res.stakeholders && 'error' in res.stakeholders) ? res.stakeholders.error : undefined },
+    knowledgeGaps: { title: "Knowledge Gaps", description: "Uncertainties and assumptions identified.", icon: Lightbulb, filename: "knowledge_gaps.md", contentKey: 'knowledgeGaps', dataKey: (res) => (res.knowledgeGaps && 'knowledgeGaps' in res.knowledgeGaps) ? res.knowledgeGaps.knowledgeGaps : undefined, errorKey: (res) => (res.knowledgeGaps && 'error' in res.knowledgeGaps) ? res.knowledgeGaps.error : undefined },
+    communicationPatterns: { title: "Comm. Patterns", description: "Analysis of conversational dynamics.", icon: BarChartHorizontal, filename: "communication_patterns.md", contentKey: 'communicationPatterns', dataKey: (res) => (res.communicationPatterns && 'communicationPatterns' in res.communicationPatterns) ? res.communicationPatterns.communicationPatterns : undefined, errorKey: (res) => (res.communicationPatterns && 'error' in res.communicationPatterns) ? res.communicationPatterns.error : undefined },
 };
 
 export default function AnalysisResults({ results, isLoading, error, selectedAnalyses }: AnalysisResultsProps) {
@@ -198,7 +202,7 @@ export default function AnalysisResults({ results, isLoading, error, selectedAna
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 h-auto flex-wrap justify-start">
           {visibleTabs.map(type => (
-            <TabsTrigger key={type} value={type} className="capitalize">{analysisConfig[type].title.split(' ')[0]}</TabsTrigger>
+            <TabsTrigger key={type} value={type} className="capitalize">{analysisConfig[type].title.replace(/ & | /g, ' ').split(' ')[0]}</TabsTrigger>
           ))}
         </TabsList>
         <div className="mt-4">

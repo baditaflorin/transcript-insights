@@ -9,6 +9,7 @@ import {googleAI} from '@genkit-ai/googleai';
 import {openAI} from 'genkitx-openai';
 import {z} from 'zod';
 import {
+  AnalysisType,
   defineSummaryPrompt,
   definePerspectivesPrompt,
   defineActionItemsPrompt,
@@ -17,7 +18,10 @@ import {
   defineRisksPrompt,
   defineOpportunitiesPrompt,
   defineSentimentPrompt,
-  AnalysisType,
+  defineDecisionsPrompt,
+  defineStakeholdersPrompt,
+  defineKnowledgeGapsPrompt,
+  defineCommunicationPatternsPrompt,
 } from './prompts';
 
 const DynamicAnalysisInputSchema = z.object({
@@ -61,6 +65,10 @@ export async function run(
     risks: defineRisksPrompt(dynamicAi),
     opportunities: defineOpportunitiesPrompt(dynamicAi),
     sentiment: defineSentimentPrompt(dynamicAi),
+    decisions: defineDecisionsPrompt(dynamicAi),
+    stakeholders: defineStakeholdersPrompt(dynamicAi),
+    knowledgeGaps: defineKnowledgeGapsPrompt(dynamicAi),
+    communicationPatterns: defineCommunicationPatternsPrompt(dynamicAi),
   };
 
 
@@ -74,7 +82,7 @@ export async function run(
       const {transcript, selectedAnalyses} = input;
 
       const analysisPromises = selectedAnalyses.map(async type => {
-        const prompt = prompts[type];
+        const prompt = prompts[type as keyof typeof prompts];
         if (!prompt) {
           console.warn(`No prompt found for analysis type: ${type}`);
           return;

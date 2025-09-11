@@ -15,6 +15,10 @@ export const AnalysisType = {
   RISKS: 'risks',
   OPPORTUNITIES: 'opportunities',
   SENTIMENT: 'sentiment',
+  DECISIONS: 'decisions',
+  STAKEHOLDERS: 'stakeholders',
+  KNOWLEDGE_GAPS: 'knowledgeGaps',
+  COMMUNICATION_PATTERNS: 'communicationPatterns',
 } as const;
 
 export type AnalysisType = (typeof AnalysisType)[keyof typeof AnalysisType];
@@ -102,6 +106,42 @@ export const ToneAndSentimentOutputSchema = z.object({
 });
 export type ToneAndSentimentOutput = z.infer<typeof ToneAndSentimentOutputSchema>;
 
+export const KeyDecisionsOutputSchema = z.object({
+  decisions: z
+    .string()
+    .describe(
+      'A list of specific decisions made, commitments given, and agreed-upon next steps with ownership. Format as Markdown.'
+    ),
+});
+export type KeyDecisionsOutput = z.infer<typeof KeyDecisionsOutputSchema>;
+
+export const StakeholderMappingOutputSchema = z.object({
+  stakeholders: z
+    .string()
+    .describe(
+      'A map of all people, teams, or organizations mentioned, their roles, influence, and relationships. Format as Markdown.'
+    ),
+});
+export type StakeholderMappingOutput = z.infer<typeof StakeholderMappingOutputSchema>;
+
+export const KnowledgeGapsOutputSchema = z.object({
+  knowledgeGaps: z
+    .string()
+    .describe(
+      'A list of acknowledged uncertainties, assumptions made, or missing information. Format as Markdown.'
+    ),
+});
+export type KnowledgeGapsOutput = z.infer<typeof KnowledgeGapsOutputSchema>;
+
+export const CommunicationPatternsOutputSchema = z.object({
+  communicationPatterns: z
+    .string()
+    .describe(
+      'An analysis of speaking time, interruption patterns, and agreement/disagreement frequencies. Format as Markdown.'
+    ),
+});
+export type CommunicationPatternsOutput = z.infer<typeof CommunicationPatternsOutputSchema>;
+
 
 // Prompt Definitions
 export const defineSummaryPrompt = (ai: Genkit) => ai.definePrompt({
@@ -158,4 +198,32 @@ export const defineSentimentPrompt = (ai: Genkit) => ai.definePrompt({
   input: {schema: TranscriptInputSchema},
   output: {schema: ToneAndSentimentOutputSchema},
   prompt: `Analyze the overall tone and sentiment of the conversation. Describe how each speaker felt during the conversation (positive, neutral, concerned, skeptical, enthusiastic, etc.) and support with evidence from their words. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+});
+
+export const defineDecisionsPrompt = (ai: Genkit) => ai.definePrompt({
+  name: 'keyDecisionsPrompt',
+  input: { schema: TranscriptInputSchema },
+  output: { schema: KeyDecisionsOutputSchema },
+  prompt: `Extract specific decisions made, commitments given by participants, and any agreed-upon next steps with ownership from the transcript. This differs from action items by focusing on binding agreements and strategic choices. Format as Markdown.\n\nTranscript:\n{{transcript}}`,
+});
+
+export const defineStakeholdersPrompt = (ai: Genkit) => ai.definePrompt({
+  name: 'stakeholderMappingPrompt',
+  input: { schema: TranscriptInputSchema },
+  output: { schema: StakeholderMappingOutputSchema },
+  prompt: `Identify all people, teams, or organizations mentioned in the call, their roles, influence levels, and relationships to the discussed topics. This helps understand the broader ecosystem and potential impact areas. Format as Markdown.\n\nTranscript:\n{{transcript}}`,
+});
+
+export const defineKnowledgeGapsPrompt = (ai: Genkit) => ai.definePrompt({
+  name: 'knowledgeGapsPrompt',
+  input: { schema: TranscriptInputSchema },
+  output: { schema: KnowledgeGapsOutputSchema },
+  prompt: `Highlight areas from the transcript where participants acknowledged uncertainty, made assumptions, or identified missing information that could affect outcomes. This is distinct from open questions by focusing on what's unknown or unverified. Format as Markdown.\n\nTranscript:\n{{transcript}}`,
+});
+
+export const defineCommunicationPatternsPrompt = (ai: Genkit) => ai.definePrompt({
+  name: 'communicationPatternsPrompt',
+  input: { schema: TranscriptInputSchema },
+  output: { schema: CommunicationPatternsOutputSchema },
+  prompt: `Analyze speaking time distribution, interruption patterns, agreement/disagreement frequencies, and influence dynamics between participants from the transcript. This provides insights into team dynamics and communication effectiveness. Format as Markdown.\n\nTranscript:\n{{transcript}}`,
 });

@@ -16,6 +16,10 @@ import type {
   RisksAndConcernsOutput,
   OpportunitiesAndIdeasOutput,
   ToneAndSentimentOutput,
+  KeyDecisionsOutput,
+  StakeholderMappingOutput,
+  KnowledgeGapsOutput,
+  CommunicationPatternsOutput,
 } from '@/ai/flows/prompts';
 
 
@@ -28,6 +32,10 @@ export type {
   RisksAndConcernsOutput,
   OpportunitiesAndIdeasOutput,
   ToneAndSentimentOutput,
+  KeyDecisionsOutput,
+  StakeholderMappingOutput,
+  KnowledgeGapsOutput,
+  CommunicationPatternsOutput,
 };
 
 type ErrorResult = {error: string};
@@ -41,13 +49,17 @@ export type AnalysisResult = {
   risks?: RisksAndConcernsOutput | ErrorResult;
   opportunities?: OpportunitiesAndIdeasOutput | ErrorResult;
   sentiment?: ToneAndSentimentOutput | ErrorResult;
+  decisions?: KeyDecisionsOutput | ErrorResult;
+  stakeholders?: StakeholderMappingOutput | ErrorResult;
+  knowledgeGaps?: KnowledgeGapsOutput | ErrorResult;
+  communicationPatterns?: CommunicationPatternsOutput | ErrorResult;
 };
 
 export async function analyzeTranscript(
   transcript: string,
   selectedAnalyses: (typeof AnalysisType)[keyof typeof AnalysisType][],
   provider: 'google' | 'openai',
-  apiKey: string | undefined,
+  apiKey: string,
 ): Promise<AnalysisResult | {error: string}> {
   if (!transcript || transcript.trim().length === 0) {
     return {error: 'Transcript is empty. Please provide some text to analyze.'};

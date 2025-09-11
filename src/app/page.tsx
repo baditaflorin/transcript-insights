@@ -16,7 +16,7 @@ export default function Home() {
   const [results, setResults] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedAnalyses, setSelectedAnalyses] = useState<(typeof analysisTypes)[number][]>(['summary', 'perspectives', 'actionItems', 'openQuestions']);
+  const [selectedAnalyses, setSelectedAnalyses] = useState<(typeof analysisTypes)[number][]>(['summary', 'perspectives', 'actionItems', 'openQuestions', 'timeline', 'risks', 'opportunities', 'sentiment', 'decisions', 'stakeholders', 'knowledgeGaps', 'communicationPatterns']);
 
   const handleReset = () => {
     setResults(null);
