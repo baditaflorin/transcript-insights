@@ -24,19 +24,15 @@ import type {
 import { generateFilename as generateFilenameFlow } from '@/ai/flows/generate-filename-flow';
 import {z} from 'zod';
 
-export const GenerateFilenameInputSchema = z.object({
-  transcript: z.string(),
-  provider: z.enum(['google', 'openai']),
-  apiKey: z.string(),
-});
-export type GenerateFilenameInput = z.infer<typeof GenerateFilenameInputSchema>;
+export type GenerateFilenameInput = {
+  transcript: string;
+  provider: 'google' | 'openai';
+  apiKey: string;
+};
 
-export const GenerateFilenameOutputSchema = z.object({
-  filename: z.string(),
-});
-export type GenerateFilenameOutput = z.infer<
-  typeof GenerateFilenameOutputSchema
->;
+export type GenerateFilenameOutput = {
+  filename: string;
+};
 
 
 export type {

@@ -5,7 +5,17 @@
 
 import {z} from 'zod';
 import {configureAi} from './utils';
-import type { GenerateFilenameInput, GenerateFilenameOutput, GenerateFilenameInputSchema, GenerateFilenameOutputSchema } from '@/app/actions';
+import type { GenerateFilenameInput, GenerateFilenameOutput } from '@/app/actions';
+
+const GenerateFilenameInputSchema = z.object({
+  transcript: z.string(),
+  provider: z.enum(['google', 'openai']),
+  apiKey: z.string(),
+});
+
+const GenerateFilenameOutputSchema = z.object({
+  filename: z.string(),
+});
 
 
 export async function generateFilename(
@@ -19,7 +29,7 @@ export async function generateFilename(
     {
       name: 'filenamePrompt',
       input: {schema: z.object({transcript: z.string()})},
-      output: {schema: z.object({filename: z.string()})},
+      output: {schema: GenerateFilenameOutputSchema},
       prompt: `Based on the following transcript, generate a short, descriptive, file-safe filename. The filename should be in kebab-case and end with '.md'. For example: 'quarterly-sales-review.md'.\n\nTranscript:\n{{transcript}}`,
     }
   );
@@ -27,14 +37,8 @@ export async function generateFilename(
   const generateFilenameFlow = dynamicAi.defineFlow(
     {
       name: 'generateFilenameFlow',
-      inputSchema: z.object({
-        transcript: z.string(),
-        provider: z.enum(['google', 'openai']),
-        apiKey: z.string(),
-      }),
-      outputSchema: z.object({
-        filename: z.string(),
-      }),
+      inputSchema: GenerateFilenameInputSchema,
+      outputSchema: GenerateFilenameOutputSchema,
     },
     async (input) => {
         const {output} = await FilenamePrompt({transcript: input.transcript}, {model});
