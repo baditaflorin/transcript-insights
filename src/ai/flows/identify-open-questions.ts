@@ -24,7 +24,7 @@ const IdentifyOpenQuestionsOutputSchema = z.object({
   openQuestions: z
     .string()
     .describe(
-      'A list of unanswered questions, unclear points, or topics that require follow-up from this conversation, phrased as clear questions or reminders that can be used in the next meeting.'
+      'A list of unanswered questions, unclear points, or topics that require follow-up from this conversation, phrased as clear questions or reminders that can be used in the next meeting. Format the output as Markdown.'
     ),
 });
 export type IdentifyOpenQuestionsOutput = z.infer<
@@ -32,16 +32,21 @@ export type IdentifyOpenQuestionsOutput = z.infer<
 >;
 
 export async function identifyOpenQuestions(
-  input: IdentifyOpenQuestionsInput
+  input: IdentifyOpenQuestionsInput,
+  onChunk?: (chunk: IdentifyOpenQuestionsOutput) => void
 ): Promise<IdentifyOpenQuestionsOutput> {
-  return identifyOpenQuestionsFlow(input);
+  return identifyOpenQuestionsFlow(input, onChunk);
 }
 
 const prompt = ai.definePrompt({
   name: 'identifyOpenQuestionsPrompt',
   input: {schema: IdentifyOpenQuestionsInputSchema},
   output: {schema: IdentifyOpenQuestionsOutputSchema},
-  prompt: `Identify any unanswered questions, unclear points, or topics that require follow-up from this conversation. Phrase them as clear questions or reminders that can be used in the next meeting.\n\nTranscript:\n{{transcript}}`,
+  prompt: `Identify any unanswered questions, unclear points, or topics that require follow-up from this conversation. Phrase them as clear questions or reminders that can be used in the next meeting.
+Format your response as Markdown.
+
+Transcript:
+{{transcript}}`,
 });
 
 const identifyOpenQuestionsFlow = ai.defineFlow(
@@ -50,8 +55,13 @@ const identifyOpenQuestionsFlow = ai.defineFlow(
     inputSchema: IdentifyOpenQuestionsInputSchema,
     outputSchema: IdentifyOpenQuestionsOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input, onChunk) => {
+    const {stream, response} = prompt.stream(input);
+    if (onChunk) {
+      for await (const chunk of stream) {
+        onChunk(chunk);
+      }
+    }
+    return (await response)!;
   }
 );

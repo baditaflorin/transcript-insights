@@ -1,15 +1,35 @@
 "use client";
 
-import { useState } from 'react';
+import { useState }from 'react';
 import Header from '@/components/app/header';
 import TranscriptForm from '@/components/app/transcript-form';
 import AnalysisResults from '@/components/app/analysis-results';
-import type { AnalysisResult } from '@/app/actions';
+import {
+  AnalysisResult,
+  AnalyzeConversationPerspectivesOutput,
+  ExtractActionItemsOutput,
+  IdentifyOpenQuestionsOutput,
+  SummarizeTranscriptOutput
+} from '@/app/actions';
+
+export type StreamingAnalysisResult = {
+  perspectives: AnalyzeConversationPerspectivesOutput | null;
+  actionItems: ExtractActionItemsOutput | null;
+  openQuestions: IdentifyOpenQuestionsOutput | null;
+  summary: SummarizeTranscriptOutput | null;
+};
 
 export default function Home() {
   const [results, setResults] = useState<AnalysisResult | null>(null);
+  const [streamingResults, setStreamingResults] = useState<StreamingAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleReset = () => {
+    setResults(null);
+    setStreamingResults(null);
+    setError(null);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -18,11 +38,23 @@ export default function Home() {
         <div className="grid gap-12 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Input Transcript</h2>
-            <TranscriptForm setResults={setResults} setIsLoading={setIsLoading} isLoading={isLoading} setError={setError} />
+            <TranscriptForm
+              setResults={setResults}
+              setIsLoading={setIsLoading}
+              isLoading={isLoading}
+              setError={setError}
+              setStreamingResults={setStreamingResults}
+              onReset={handleReset}
+            />
           </div>
           <div className="flex flex-col gap-6">
              <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
-            <AnalysisResults results={results} isLoading={isLoading} error={error} />
+            <AnalysisResults
+              results={results}
+              streamingResults={streamingResults}
+              isLoading={isLoading}
+              error={error}
+            />
           </div>
         </div>
       </main>

@@ -1,15 +1,18 @@
 "use client";
 
-import { CheckSquare, Download, MessageCircleQuestion, Users, AlertTriangle } from 'lucide-react';
+import { CheckSquare, Download, MessageCircleQuestion, Users, AlertTriangle, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AnalysisResult } from '@/app/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import type { StreamingAnalysisResult } from '@/app/page';
+import Markdown from 'react-markdown';
 
 interface AnalysisResultsProps {
   results: AnalysisResult | null;
+  streamingResults: StreamingAnalysisResult | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -31,12 +34,12 @@ const formatActionItems = (actionItems: { speaker: string; task: string }[]): st
     if (!acc[item.speaker]) {
       acc[item.speaker] = [];
     }
-    acc[item.speaker].push(`* ${item.task}`);
+    acc[item.speaker].push(`- [ ] ${item.task}`);
     return acc;
   }, {} as Record<string, string[]>);
 
   return Object.entries(groupedBySpeaker)
-    .map(([speaker, tasks]) => `## ${speaker}\n\n${tasks.join('\n')}`)
+    .map(([speaker, tasks]) => `### ${speaker}\n\n${tasks.join('\n')}`)
     .join('\n\n');
 };
 
@@ -62,7 +65,7 @@ const ResultCard = ({ title, description, icon: Icon, content, filename, isLoadi
       </div>
     </CardHeader>
     <CardContent>
-      {isLoading ? (
+      {isLoading && !content ? (
         <div className="space-y-3">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
@@ -70,15 +73,15 @@ const ResultCard = ({ title, description, icon: Icon, content, filename, isLoadi
           <Skeleton className="h-4 w-3/4" />
         </div>
       ) : (
-        <pre className="whitespace-pre-wrap font-body text-sm text-foreground/90 bg-muted/50 p-4 rounded-lg min-h-[100px]">
-          {content || 'No content generated.'}
-        </pre>
+        <div className="prose prose-sm max-w-none text-foreground/90 bg-muted/50 p-4 rounded-lg min-h-[100px]">
+          {content ? <Markdown>{content}</Markdown> : 'No content generated.'}
+        </div>
       )}
     </CardContent>
   </Card>
 );
 
-export default function AnalysisResults({ results, isLoading, error }: AnalysisResultsProps) {
+export default function AnalysisResults({ results, streamingResults, isLoading, error }: AnalysisResultsProps) {
   if (error) {
     return (
         <Alert variant="destructive" className="shadow-md">
@@ -94,7 +97,10 @@ export default function AnalysisResults({ results, isLoading, error }: AnalysisR
     );
   }
 
-  if (!results && !isLoading) {
+  const displayResults = results || streamingResults;
+  const showPlaceholder = !displayResults && !isLoading;
+
+  if (showPlaceholder) {
     return (
       <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card">
         <div className="text-center text-muted-foreground">
@@ -105,24 +111,38 @@ export default function AnalysisResults({ results, isLoading, error }: AnalysisR
     );
   }
 
-  const actionItemsContent = results?.actionItems ? formatActionItems(results.actionItems.actionItems) : '';
+  const actionItemsContent = displayResults?.actionItems ? formatActionItems(displayResults.actionItems.actionItems) : '';
+  const perspectivesContent = displayResults?.perspectives?.analysis || '';
+  const openQuestionsContent = displayResults?.openQuestions?.openQuestions || '';
+  const summaryContent = displayResults?.summary?.summary || '';
 
   return (
-    <Tabs defaultValue="perspectives" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 h-12">
+    <Tabs defaultValue="summary" className="w-full">
+      <TabsList className="grid w-full grid-cols-4 h-12">
+        <TabsTrigger value="summary">Summary</TabsTrigger>
         <TabsTrigger value="perspectives">Perspectives</TabsTrigger>
         <TabsTrigger value="actions">Action Items</TabsTrigger>
         <TabsTrigger value="questions">Open Questions</TabsTrigger>
       </TabsList>
       <div className="mt-4">
+        <TabsContent value="summary" className="m-0">
+          <ResultCard
+            title="Summary"
+            description="A concise overview of the conversation."
+            icon={FileText}
+            content={summaryContent}
+            filename="summary.md"
+            isLoading={isLoading && !summaryContent}
+          />
+        </TabsContent>
         <TabsContent value="perspectives" className="m-0">
           <ResultCard
             title="Conversation Perspectives"
             description="Each speaker's point of view, goals, and contributions."
             icon={Users}
-            content={results?.perspectives.analysis || ''}
-            filename="conversation_perspectives.txt"
-            isLoading={isLoading}
+            content={perspectivesContent}
+            filename="conversation_perspectives.md"
+            isLoading={isLoading && !perspectivesContent}
           />
         </TabsContent>
         <TabsContent value="actions" className="m-0">
@@ -131,8 +151,8 @@ export default function AnalysisResults({ results, isLoading, error }: AnalysisR
             description="A checklist of tasks assigned to each speaker."
             icon={CheckSquare}
             content={actionItemsContent}
-            filename="action_checklist.txt"
-            isLoading={isLoading}
+            filename="action_checklist.md"
+            isLoading={isLoading && !actionItemsContent}
           />
         </TabsContent>
         <TabsContent value="questions" className="m-0">
@@ -140,9 +160,9 @@ export default function AnalysisResults({ results, isLoading, error }: AnalysisR
             title="Open Questions"
             description="Unanswered questions and topics for follow-up."
             icon={MessageCircleQuestion}
-            content={results?.openQuestions.openQuestions || ''}
-            filename="followups.txt"
-            isLoading={isLoading}
+            content={openQuestionsContent}
+            filename="followups.md"
+            isLoading={isLoading && !openQuestionsContent}
           />
         </TabsContent>
       </div>

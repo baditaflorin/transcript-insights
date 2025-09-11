@@ -16,7 +16,9 @@ const ExtractActionItemsInputSchema = z.object({
     .string()
     .describe('The transcript of the conversation to extract action items from.'),
 });
-export type ExtractActionItemsInput = z.infer<typeof ExtractActionItemsInputSchema>;
+export type ExtractActionItemsInput = z.infer<
+  typeof ExtractActionItemsInputSchema
+>;
 
 const ActionItemSchema = z.object({
   speaker: z.string().describe('The speaker assigned the action item.'),
@@ -24,19 +26,29 @@ const ActionItemSchema = z.object({
 });
 
 const ExtractActionItemsOutputSchema = z.object({
-  actionItems: z.array(ActionItemSchema).describe('A list of action items for each speaker.'),
+  actionItems: z
+    .array(ActionItemSchema)
+    .describe('A list of action items for each speaker.'),
 });
-export type ExtractActionItemsOutput = z.infer<typeof ExtractActionItemsOutputSchema>;
+export type ExtractActionItemsOutput = z.infer<
+  typeof ExtractActionItemsOutputSchema
+>;
 
-export async function extractActionItems(input: ExtractActionItemsInput): Promise<ExtractActionItemsOutput> {
-  return extractActionItemsFlow(input);
+export async function extractActionItems(
+  input: ExtractActionItemsInput,
+  onChunk?: (chunk: ExtractActionItemsOutput) => void
+): Promise<ExtractActionItemsOutput> {
+  return extractActionItemsFlow(input, onChunk);
 }
 
 const prompt = ai.definePrompt({
   name: 'extractActionItemsPrompt',
   input: {schema: ExtractActionItemsInputSchema},
   output: {schema: ExtractActionItemsOutputSchema},
-  prompt: `Create a checklist of action items for each speaker based on the transcript.\nMake it specific, task-oriented, and assign clearly who is responsible.\nIf no tasks exist for a person, you can omit them from the output.`,
+  prompt: `Create a checklist of action items for each speaker based on the transcript.
+Make it specific, task-oriented, and assign clearly who is responsible.
+If no tasks exist for a person, you can omit them from the output.
+Format the output as a Markdown checklist.`,
 });
 
 const extractActionItemsFlow = ai.defineFlow(
@@ -45,8 +57,13 @@ const extractActionItemsFlow = ai.defineFlow(
     inputSchema: ExtractActionItemsInputSchema,
     outputSchema: ExtractActionItemsOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input, onChunk) => {
+    const {stream, response} = prompt.stream(input);
+    if (onChunk) {
+      for await (const chunk of stream) {
+        onChunk(chunk);
+      }
+    }
+    return (await response)!;
   }
 );
