@@ -30,8 +30,8 @@ export async function analyzeTranscript(transcript: string): Promise<AnalysisRes
       actionItems,
       openQuestions,
     };
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error analyzing transcript:', e);
-    return { error: 'An unexpected error occurred while analyzing the transcript. Please try again.' };
+    return { error: `An unexpected error occurred while analyzing the transcript: ${e.message}` };
   }
 }
