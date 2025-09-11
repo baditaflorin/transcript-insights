@@ -24,7 +24,7 @@ const DynamicAnalysisInputSchema = z.object({
   transcript: z.string(),
   selectedAnalyses: z.array(z.nativeEnum(AnalysisType)),
   provider: z.enum(['google', 'openai']),
-  apiKey: z.string().optional(),
+  apiKey: z.string(),
 });
 
 export type DynamicAnalysisInput = z.infer<typeof DynamicAnalysisInputSchema>;
@@ -40,7 +40,7 @@ export async function run(
   if (provider === 'openai') {
     if (!apiKey) throw new Error("OpenAI API key is required.");
     plugins.push(openAI({apiKey}));
-    model = 'openai/gpt-4o-mini';
+    model = 'openai/gpt-5-mini-2025-08-07';
   } else {
     if (!apiKey) throw new Error("Google AI API key is required.");
     plugins.push(googleAI({apiKey}));
@@ -49,7 +49,6 @@ export async function run(
 
   const dynamicAi = genkit({
     plugins: plugins,
-    // model: model, //This is not a valid property for genkit()
   });
   
   // Define prompts for each analysis type using the dynamic AI instance
