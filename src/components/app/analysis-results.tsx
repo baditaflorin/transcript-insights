@@ -47,7 +47,7 @@ const formatActionItems = (actionItems: { speaker: string; task: string }[]): st
     .join('\n\n');
 };
 
-const ResultCard = ({ title, description, icon: Icon, content, filename, isLoading }: { title: string, description: string, icon: React.ElementType, content: string | null, filename: string, isLoading: boolean }) => (
+const ResultCard = ({ title, description, icon: Icon, content, filename, isLoading, error }: { title: string, description: string, icon: React.ElementType, content: string | null, filename: string, isLoading: boolean, error: string | null }) => (
   <Card className="h-full shadow-md">
     <CardHeader>
       <div className="flex items-start justify-between gap-4">
@@ -77,23 +77,36 @@ const ResultCard = ({ title, description, icon: Icon, content, filename, isLoadi
           <Skeleton className="h-4 w-3/4" />
         </div>
       ) : (
-        <div className="prose prose-sm max-w-none text-foreground/90 bg-muted/50 p-4 rounded-lg min-h-[100px]">
-          {content ? <Markdown>{content}</Markdown> : <p>No content generated. This might be because the analysis was not selected or the transcript did not contain relevant information for this category.</p>}
-        </div>
+        <>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-5 w-5" />
+              <AlertTitle>Analysis Failed</AlertTitle>
+              <AlertDescription>
+                <pre className="mt-2 whitespace-pre-wrap font-code text-xs">
+                  {error}
+                </pre>
+              </AlertDescription>
+            </Alert>
+          )}
+          <div className="prose prose-sm max-w-none text-foreground/90 bg-muted/50 p-4 rounded-lg min-h-[100px]">
+            {content ? <Markdown>{content}</Markdown> : <p>No content generated. This might be because the analysis was not selected, an error occurred, or the transcript did not contain relevant information for this category.</p>}
+          </div>
+        </>
       )}
     </CardContent>
   </Card>
 );
 
-const analysisConfig: Record<AnalysisType, { title: string; description: string; icon: React.ElementType; filename: string; contentKey: keyof AnalysisResult, dataKey: (res: AnalysisResult) => string | undefined }> = {
-    summary: { title: "Summary", description: "A concise overview of the conversation.", icon: FileText, filename: "summary.md", contentKey: 'summary', dataKey: (res) => res.summary?.summary },
-    perspectives: { title: "Conversation Perspectives", description: "Each speaker's point of view, goals, and contributions.", icon: Users, filename: "perspectives.md", contentKey: 'perspectives', dataKey: (res) => res.perspectives?.analysis },
-    actionItems: { title: "Action Checklist", description: "A checklist of tasks assigned to each speaker.", icon: CheckSquare, filename: "action_checklist.md", contentKey: 'actionItems', dataKey: (res) => res.actionItems && res.actionItems.actionItems ? formatActionItems(res.actionItems.actionItems) : undefined },
-    openQuestions: { title: "Open Questions", description: "Unanswered questions and topics for follow-up.", icon: MessageCircleQuestion, filename: "followups.md", contentKey: 'openQuestions', dataKey: (res) => res.openQuestions?.openQuestions },
-    timeline: { title: "Timeline of Key Moments", description: "Chronological points and decisions from the transcript.", icon: Clock, filename: "timeline.md", contentKey: 'timeline', dataKey: (res) => res.timeline?.timeline },
-    risks: { title: "Risks & Concerns", description: "Identified risks, concerns, or objections.", icon: ShieldAlert, filename: "risks_concerns.md", contentKey: 'risks', dataKey: (res) => res.risks?.risksAndConcerns },
-    opportunities: { title: "Opportunities & Ideas", description: "Opportunities, ideas, or suggestions raised.", icon: Zap, filename: "opportunities.md", contentKey: 'opportunities', dataKey: (res) => res.opportunities?.opportunitiesAndIdeas },
-    sentiment: { title: "Tone & Sentiment", description: "Analysis of the conversation's tone and sentiment.", icon: Smile, filename: "sentiment.md", contentKey: 'sentiment', dataKey: (res) => res.sentiment?.sentiment },
+const analysisConfig: Record<AnalysisType, { title: string; description: string; icon: React.ElementType; filename: string; contentKey: keyof AnalysisResult, dataKey: (res: AnalysisResult) => string | undefined, errorKey: (res: AnalysisResult) => string | undefined }> = {
+    summary: { title: "Summary", description: "A concise overview of the conversation.", icon: FileText, filename: "summary.md", contentKey: 'summary', dataKey: (res) => (res.summary && 'summary' in res.summary) ? res.summary.summary : undefined, errorKey: (res) => (res.summary && 'error' in res.summary) ? res.summary.error : undefined },
+    perspectives: { title: "Conversation Perspectives", description: "Each speaker's point of view, goals, and contributions.", icon: Users, filename: "perspectives.md", contentKey: 'perspectives', dataKey: (res) => (res.perspectives && 'analysis' in res.perspectives) ? res.perspectives.analysis : undefined, errorKey: (res) => (res.perspectives && 'error' in res.perspectives) ? res.perspectives.error : undefined },
+    actionItems: { title: "Action Checklist", description: "A checklist of tasks assigned to each speaker.", icon: CheckSquare, filename: "action_checklist.md", contentKey: 'actionItems', dataKey: (res) => (res.actionItems && 'actionItems' in res.actionItems && res.actionItems.actionItems) ? formatActionItems(res.actionItems.actionItems) : undefined, errorKey: (res) => (res.actionItems && 'error' in res.actionItems) ? res.actionItems.error : undefined },
+    openQuestions: { title: "Open Questions", description: "Unanswered questions and topics for follow-up.", icon: MessageCircleQuestion, filename: "followups.md", contentKey: 'openQuestions', dataKey: (res) => (res.openQuestions && 'openQuestions' in res.openQuestions) ? res.openQuestions.openQuestions : undefined, errorKey: (res) => (res.openQuestions && 'error' in res.openQuestions) ? res.openQuestions.error : undefined },
+    timeline: { title: "Timeline of Key Moments", description: "Chronological points and decisions from the transcript.", icon: Clock, filename: "timeline.md", contentKey: 'timeline', dataKey: (res) => (res.timeline && 'timeline' in res.timeline) ? res.timeline.timeline : undefined, errorKey: (res) => (res.timeline && 'error' in res.timeline) ? res.timeline.error : undefined },
+    risks: { title: "Risks & Concerns", description: "Identified risks, concerns, or objections.", icon: ShieldAlert, filename: "risks_concerns.md", contentKey: 'risks', dataKey: (res) => (res.risks && 'risksAndConcerns' in res.risks) ? res.risks.risksAndConcerns : undefined, errorKey: (res) => (res.risks && 'error' in res.risks) ? res.risks.error : undefined },
+    opportunities: { title: "Opportunities & Ideas", description: "Opportunities, ideas, or suggestions raised.", icon: Zap, filename: "opportunities.md", contentKey: 'opportunities', dataKey: (res) => (res.opportunities && 'opportunitiesAndIdeas' in res.opportunities) ? res.opportunities.opportunitiesAndIdeas : undefined, errorKey: (res) => (res.opportunities && 'error' in res.opportunities) ? res.opportunities.error : undefined },
+    sentiment: { title: "Tone & Sentiment", description: "Analysis of the conversation's tone and sentiment.", icon: Smile, filename: "sentiment.md", contentKey: 'sentiment', dataKey: (res) => (res.sentiment && 'sentiment' in res.sentiment) ? res.sentiment.sentiment : undefined, errorKey: (res) => (res.sentiment && 'error' in res.sentiment) ? res.sentiment.error : undefined },
 };
 
 export default function AnalysisResults({ results, streamingResults, isLoading, error, selectedAnalyses }: AnalysisResultsProps) {
@@ -163,8 +176,10 @@ export default function AnalysisResults({ results, streamingResults, isLoading, 
       <div className="mt-4">
         {visibleTabs.map(type => {
             const config = analysisConfig[type];
+            const resultData = displayResults ? displayResults[config.contentKey] : null;
             const content = displayResults ? config.dataKey(displayResults as AnalysisResult) : null;
-            const isTabLoading = isLoading && !content;
+            const tabError = displayResults ? config.errorKey(displayResults as AnalysisResult) : null;
+            const isTabLoading = isLoading && !resultData;
             return (
                 <TabsContent key={type} value={type} className="m-0">
                     <ResultCard
@@ -174,6 +189,7 @@ export default function AnalysisResults({ results, streamingResults, isLoading, 
                         content={content || null}
                         filename={config.filename}
                         isLoading={isTabLoading}
+                        error={tabError || null}
                     />
                 </TabsContent>
             );

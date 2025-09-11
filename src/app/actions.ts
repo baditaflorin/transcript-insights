@@ -2,7 +2,6 @@
 
 import {run} from '@/ai/flows/dynamic-analysis-flow';
 import type {
-  AnalysisType,
   AnalyzeConversationPerspectivesOutput,
   ExtractActionItemsOutput,
   IdentifyOpenQuestionsOutput,
@@ -11,7 +10,8 @@ import type {
   RisksAndConcernsOutput,
   OpportunitiesAndIdeasOutput,
   ToneAndSentimentOutput,
-} from '@/app/page';
+} from '@/ai/flows/prompts';
+import {AnalysisType} from '@/ai/flows/prompts';
 
 export type {
   AnalyzeConversationPerspectivesOutput,
@@ -24,30 +24,33 @@ export type {
   ToneAndSentimentOutput,
 };
 
+type ErrorResult = {error: string};
+
 export type AnalysisResult = {
-  perspectives?: AnalyzeConversationPerspectivesOutput;
-  actionItems?: ExtractActionItemsOutput;
-  openQuestions?: IdentifyOpenQuestionsOutput;
-  summary?: SummarizeTranscriptOutput;
-  timeline?: TimelineOfKeyMomentsOutput;
-  risks?: RisksAndConcernsOutput;
-  opportunities?: OpportunitiesAndIdeasOutput;
-  sentiment?: ToneAndSentimentOutput;
+  perspectives?: AnalyzeConversationPerspectivesOutput | ErrorResult;
+  actionItems?: ExtractActionItemsOutput | ErrorResult;
+  openQuestions?: IdentifyOpenQuestionsOutput | ErrorResult;
+  summary?: SummarizeTranscriptOutput | ErrorResult;
+  timeline?: TimelineOfKeyMomentsOutput | ErrorResult;
+  risks?: RisksAndConcernsOutput | ErrorResult;
+  opportunities?: OpportunitiesAndIdeasOutput | ErrorResult;
+  sentiment?: ToneAndSentimentOutput | ErrorResult;
 };
 
 export type AnalysisChunk =
-  | {type: 'perspectives'; data: AnalyzeConversationPerspectivesOutput}
-  | {type: 'actionItems'; data: ExtractActionItemsOutput}
-  | {type: 'openQuestions'; data: IdentifyOpenQuestionsOutput}
-  | {type: 'summary'; data: SummarizeTranscriptOutput}
-  | {type: 'timeline'; data: TimelineOfKeyMomentsOutput}
-  | {type: 'risks'; data: RisksAndConcernsOutput}
-  | {type: 'opportunities'; data: OpportunitiesAndIdeasOutput}
-  | {type: 'sentiment'; data: ToneAndSentimentOutput};
+  | {type: 'perspectives'; data: AnalyzeConversationPerspectivesOutput | ErrorResult}
+  | {type: 'actionItems'; data: ExtractActionItemsOutput | ErrorResult}
+  | {type: 'openQuestions'; data: IdentifyOpenQuestionsOutput | ErrorResult}
+  | {type: 'summary'; data: SummarizeTranscriptOutput | ErrorResult}
+  | {type: 'timeline'; data: TimelineOfKeyMomentsOutput | ErrorResult}
+  | {type: 'risks'; data: RisksAndConcernsOutput | ErrorResult}
+  | {type: 'opportunities'; data: OpportunitiesAndIdeasOutput | ErrorResult}
+  | {type: 'sentiment'; data: ToneAndSentimentOutput | ErrorResult};
+
 
 export async function analyzeTranscript(
   transcript: string,
-  selectedAnalyses: AnalysisType[],
+  selectedAnalyses: (typeof AnalysisType)[keyof typeof AnalysisType][],
   provider: 'google' | 'openai',
   apiKey: string | undefined,
   onChunk: (chunk: AnalysisChunk) => void
@@ -72,7 +75,11 @@ export async function analyzeTranscript(
       },
       chunk => {
         // The dynamic flow returns chunks with a specific shape. We adapt it here.
-        onChunk(chunk as AnalysisChunk);
+        if (chunk.error) {
+          onChunk({ type: chunk.type, data: { error: chunk.error } } as AnalysisChunk);
+        } else {
+          onChunk(chunk as AnalysisChunk);
+        }
       }
     );
     return results as AnalysisResult;

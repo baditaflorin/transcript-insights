@@ -15,30 +15,23 @@ import {
   OpportunitiesAndIdeasOutput,
   ToneAndSentimentOutput,
 } from './actions';
+import { AnalysisType } from '@/ai/flows/prompts';
 
 
-export const analysisTypes = [
-  'summary',
-  'perspectives',
-  'actionItems',
-  'openQuestions',
-  'timeline',
-  'risks',
-  'opportunities',
-  'sentiment',
-] as const;
+export type { AnalysisType };
+export const analysisTypes = Object.values(AnalysisType);
 
-export type AnalysisType = (typeof analysisTypes)[number];
+type ErrorResult = {error: string};
 
 export type StreamingAnalysisResult = {
-  perspectives: AnalyzeConversationPerspectivesOutput | null;
-  actionItems: ExtractActionItemsOutput | null;
-  openQuestions: IdentifyOpenQuestionsOutput | null;
-  summary: SummarizeTranscriptOutput | null;
-  timeline: TimelineOfKeyMomentsOutput | null;
-  risks: RisksAndConcernsOutput | null;
-  opportunities: OpportunitiesAndIdeasOutput | null;
-  sentiment: ToneAndSentimentOutput | null;
+  perspectives: AnalyzeConversationPerspectivesOutput | ErrorResult | null;
+  actionItems: ExtractActionItemsOutput | ErrorResult | null;
+  openQuestions: IdentifyOpenQuestionsOutput | ErrorResult | null;
+  summary: SummarizeTranscriptOutput | ErrorResult | null;
+  timeline: TimelineOfKeyMomentsOutput | ErrorResult | null;
+  risks: RisksAndConcernsOutput | ErrorResult | null;
+  opportunities: OpportunitiesAndIdeasOutput | ErrorResult | null;
+  sentiment: ToneAndSentimentOutput | ErrorResult | null;
 };
 
 export default function Home() {
@@ -46,7 +39,7 @@ export default function Home() {
   const [streamingResults, setStreamingResults] = useState<StreamingAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedAnalyses, setSelectedAnalyses] = useState<AnalysisType[]>(['summary', 'perspectives', 'actionItems', 'openQuestions']);
+  const [selectedAnalyses, setSelectedAnalyses] = useState<(typeof analysisTypes)[number][]>(['summary', 'perspectives', 'actionItems', 'openQuestions']);
 
   const handleReset = () => {
     setResults(null);
