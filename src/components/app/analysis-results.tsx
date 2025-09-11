@@ -33,6 +33,7 @@ const downloadFile = (content: string, filename: string) => {
 };
 
 const formatActionItems = (actionItems: { speaker: string; task: string }[]): string => {
+  if (!actionItems || actionItems.length === 0) return '';
   const groupedBySpeaker = actionItems.reduce((acc, item) => {
     if (!acc[item.speaker]) {
       acc[item.speaker] = [];
@@ -87,7 +88,7 @@ const ResultCard = ({ title, description, icon: Icon, content, filename, isLoadi
 const analysisConfig: Record<AnalysisType, { title: string; description: string; icon: React.ElementType; filename: string; contentKey: keyof AnalysisResult, dataKey: (res: AnalysisResult) => string | undefined }> = {
     summary: { title: "Summary", description: "A concise overview of the conversation.", icon: FileText, filename: "summary.md", contentKey: 'summary', dataKey: (res) => res.summary?.summary },
     perspectives: { title: "Conversation Perspectives", description: "Each speaker's point of view, goals, and contributions.", icon: Users, filename: "perspectives.md", contentKey: 'perspectives', dataKey: (res) => res.perspectives?.analysis },
-    actionItems: { title: "Action Checklist", description: "A checklist of tasks assigned to each speaker.", icon: CheckSquare, filename: "action_checklist.md", contentKey: 'actionItems', dataKey: (res) => res.actionItems ? formatActionItems(res.actionItems.actionItems) : undefined },
+    actionItems: { title: "Action Checklist", description: "A checklist of tasks assigned to each speaker.", icon: CheckSquare, filename: "action_checklist.md", contentKey: 'actionItems', dataKey: (res) => res.actionItems && res.actionItems.actionItems ? formatActionItems(res.actionItems.actionItems) : undefined },
     openQuestions: { title: "Open Questions", description: "Unanswered questions and topics for follow-up.", icon: MessageCircleQuestion, filename: "followups.md", contentKey: 'openQuestions', dataKey: (res) => res.openQuestions?.openQuestions },
     timeline: { title: "Timeline of Key Moments", description: "Chronological points and decisions from the transcript.", icon: Clock, filename: "timeline.md", contentKey: 'timeline', dataKey: (res) => res.timeline?.timeline },
     risks: { title: "Risks & Concerns", description: "Identified risks, concerns, or objections.", icon: ShieldAlert, filename: "risks_concerns.md", contentKey: 'risks', dataKey: (res) => res.risks?.risksAndConcerns },
