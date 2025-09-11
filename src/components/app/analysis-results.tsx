@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AnalysisResult } from '@/app/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import type { AnalysisType } from '@/ai/flows/prompts';
+import { AnalysisType } from '@/ai/flows/prompts';
 import Markdown from 'react-markdown';
 import { useMemo } from 'react';
 
@@ -15,7 +15,7 @@ interface AnalysisResultsProps {
   results: AnalysisResult | null;
   isLoading: boolean;
   error: string | null;
-  selectedAnalyses: AnalysisType[];
+  selectedAnalyses: (typeof AnalysisType)[keyof typeof AnalysisType][];
 }
 
 const downloadFile = (content: string, filename: string) => {
@@ -97,7 +97,7 @@ const ResultCard = ({ title, description, icon: Icon, content, filename, isLoadi
   </Card>
 );
 
-const analysisConfig: Record<AnalysisType, { title: string; description: string; icon: React.ElementType; filename: string; contentKey: keyof AnalysisResult, dataKey: (res: AnalysisResult) => string | undefined, errorKey: (res: AnalysisResult) => string | undefined }> = {
+const analysisConfig: Record<(typeof AnalysisType)[keyof typeof AnalysisType], { title: string; description: string; icon: React.ElementType; filename: string; contentKey: keyof AnalysisResult, dataKey: (res: AnalysisResult) => string | undefined, errorKey: (res: AnalysisResult) => string | undefined }> = {
     summary: { title: "Summary", description: "A concise overview of the conversation.", icon: FileText, filename: "summary.md", contentKey: 'summary', dataKey: (res) => (res.summary && 'summary' in res.summary) ? res.summary.summary : undefined, errorKey: (res) => (res.summary && 'error' in res.summary) ? res.summary.error : undefined },
     perspectives: { title: "Conversation Perspectives", description: "Each speaker's point of view, goals, and contributions.", icon: Users, filename: "perspectives.md", contentKey: 'perspectives', dataKey: (res) => (res.perspectives && 'analysis' in res.perspectives) ? res.perspectives.analysis : undefined, errorKey: (res) => (res.perspectives && 'error' in res.perspectives) ? res.perspectives.error : undefined },
     actionItems: { title: "Action Checklist", description: "A checklist of tasks assigned to each speaker.", icon: CheckSquare, filename: "action_checklist.md", contentKey: 'actionItems', dataKey: (res) => (res.actionItems && 'actionItems' in res.actionItems && res.actionItems.actionItems) ? formatActionItems(res.actionItems.actionItems) : undefined, errorKey: (res) => (res.actionItems && 'error' in res.actionItems) ? res.actionItems.error : undefined },
@@ -127,72 +127,103 @@ export default function AnalysisResults({ results, isLoading, error, selectedAna
   const showPlaceholder = !results && !isLoading;
 
   const visibleTabs = useMemo(() => {
-    return (Object.keys(analysisConfig) as AnalysisType[]).filter(key => selectedAnalyses.includes(key));
+    return (Object.keys(analysisConfig) as (typeof AnalysisType)[keyof typeof AnalysisType][]).filter(key => selectedAnalyses.includes(key));
   }, [selectedAnalyses]);
-  
+
+  const handleDownloadAll = () => {
+    if (!results) return;
+
+    const allContent = visibleTabs.map(type => {
+      const config = analysisConfig[type];
+      const content = config.dataKey(results);
+      if (content) {
+        return `## ${config.title}\n\n${content}`;
+      }
+      return null;
+    }).filter(Boolean).join('\n\n---\n\n');
+
+    if (allContent) {
+      downloadFile(allContent, 'analysis_bundle.md');
+    }
+  };
+
   if (showPlaceholder) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card">
-        <div className="text-center text-muted-foreground">
-          <p className="text-lg font-medium">Your insights are waiting</p>
-          <p className="text-sm">Submit a transcript and select analyses to begin.</p>
-        </div>
-      </div>
-    );
-  }
-  
-  const defaultTab = visibleTabs.length > 0 ? visibleTabs[0] : '';
-  
-  if (visibleTabs.length === 0 && isLoading) {
-     return (
-      <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card">
-        <div className="text-center text-muted-foreground">
-          <p className="text-lg font-medium">Analyzing...</p>
+      <div className="flex flex-col gap-6">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
+        <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card">
+          <div className="text-center text-muted-foreground">
+            <p className="text-lg font-medium">Your insights are waiting</p>
+            <p className="text-sm">Submit a transcript and select analyses to begin.</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (visibleTabs.length === 0 && !isLoading && !error) {
+  const defaultTab = visibleTabs.length > 0 ? visibleTabs[0] : '';
+  
+  if (visibleTabs.length === 0 && (isLoading || !error)) {
      return (
-      <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card">
-        <div className="text-center text-muted-foreground">
-          <p className="text-lg font-medium">No analysis selected</p>
-          <p className="text-sm">Please select at least one analysis type to begin.</p>
+        <div className="flex flex-col gap-6">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
+          <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card">
+            <div className="text-center text-muted-foreground">
+              {isLoading ? (
+                <p className="text-lg font-medium">Analyzing...</p>
+              ) : (
+                <>
+                  <p className="text-lg font-medium">No analysis selected</p>
+                  <p className="text-sm">Please select at least one analysis type to begin.</p>
+                </>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
     );
   }
 
   return (
-    <Tabs defaultValue={defaultTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-4 h-auto flex-wrap justify-start">
-        {visibleTabs.map(type => (
-          <TabsTrigger key={type} value={type} className="capitalize">{analysisConfig[type].title.split(' ')[0]}</TabsTrigger>
-        ))}
-      </TabsList>
-      <div className="mt-4">
-        {visibleTabs.map(type => {
-            const config = analysisConfig[type];
-            const resultData = results ? results[config.contentKey] : null;
-            const content = results ? config.dataKey(results as AnalysisResult) : null;
-            const tabError = results ? config.errorKey(results as AnalysisResult) : null;
-            const isTabLoading = isLoading && !resultData;
-            return (
-                <TabsContent key={type} value={type} className="m-0">
-                    <ResultCard
-                        title={config.title}
-                        description={config.description}
-                        icon={config.icon}
-                        content={content || null}
-                        filename={config.filename}
-                        isLoading={isTabLoading}
-                        error={tabError || null}
-                    />
-                </TabsContent>
-            );
-        })}
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
+        {results && !isLoading && (
+          <Button variant="outline" onClick={handleDownloadAll}>
+            <Download className="mr-2 h-4 w-4" />
+            Download All
+          </Button>
+        )}
       </div>
-    </Tabs>
+
+      <Tabs defaultValue={defaultTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4 h-auto flex-wrap justify-start">
+          {visibleTabs.map(type => (
+            <TabsTrigger key={type} value={type} className="capitalize">{analysisConfig[type].title.split(' ')[0]}</TabsTrigger>
+          ))}
+        </TabsList>
+        <div className="mt-4">
+          {visibleTabs.map(type => {
+              const config = analysisConfig[type];
+              const isTabLoading = isLoading && (!results || !results[config.contentKey]);
+              const content = results ? config.dataKey(results) : null;
+              const tabError = results ? config.errorKey(results) : null;
+              
+              return (
+                  <TabsContent key={type} value={type} className="m-0">
+                      <ResultCard
+                          title={config.title}
+                          description={config.description}
+                          icon={config.icon}
+                          content={content || null}
+                          filename={config.filename}
+                          isLoading={isTabLoading}
+                          error={tabError || null}
+                      />
+                  </TabsContent>
+              );
+          })}
+        </div>
+      </Tabs>
+    </div>
   );
 }

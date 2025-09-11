@@ -10,7 +10,6 @@ import {
 import { AnalysisType } from '@/ai/flows/prompts';
 
 
-export type { AnalysisType };
 export const analysisTypes = Object.values(AnalysisType);
 
 export default function Home() {
@@ -41,15 +40,12 @@ export default function Home() {
               setSelectedAnalyses={setSelectedAnalyses}
             />
           </div>
-          <div className="flex flex-col gap-6">
-             <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
-            <AnalysisResults
-              results={results}
-              isLoading={isLoading}
-              error={error}
-              selectedAnalyses={selectedAnalyses}
-            />
-          </div>
+          <AnalysisResults
+            results={results}
+            isLoading={isLoading}
+            error={error}
+            selectedAnalyses={selectedAnalyses}
+          />
         </div>
       </main>
       <footer className="py-6 md:px-8 md:py-0">
