@@ -2,8 +2,7 @@
  * @fileOverview This file contains all the prompt definitions for the various transcript analyses.
  * By centralizing them, they can be easily used by the dynamic analysis flow.
  */
-
-import {ai} from '@/ai/genkit';
+import type { Genkit } from 'genkit';
 import {z} from 'zod';
 
 // Enum for Analysis Types
@@ -93,56 +92,56 @@ const ToneAndSentimentOutputSchema = z.object({
 
 
 // Prompt Definitions
-export const summaryPrompt = ai.definePrompt({
+export const defineSummaryPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'summarizeTranscriptPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: SummarizeTranscriptOutputSchema},
   prompt: `Summarize the following conversation. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
 });
 
-export const perspectivesPrompt = ai.definePrompt({
+export const definePerspectivesPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'analyzeConversationPerspectivesPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: AnalyzeConversationPerspectivesOutputSchema},
   prompt: `Explain the conversation from both speakers’ point of view. Focus on what each person wanted, asked, and contributed. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
 });
 
-export const actionItemsPrompt = ai.definePrompt({
+export const defineActionItemsPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'extractActionItemsPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: ExtractActionItemsOutputSchema},
   prompt: `Create a checklist of action items for each speaker based on the transcript. Make it specific, task-oriented, and assign clearly who is responsible. If no tasks exist for a person, you can omit them from the output.`,
 });
 
-export const openQuestionsPrompt = ai.definePrompt({
+export const defineOpenQuestionsPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'identifyOpenQuestionsPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: IdentifyOpenQuestionsOutputSchema},
   prompt: `Identify any unanswered questions, unclear points, or topics that require follow-up from this conversation. Phrase them as clear questions or reminders that can be used in the next meeting. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
 });
 
-export const timelinePrompt = ai.definePrompt({
+export const defineTimelinePrompt = (ai: Genkit) => ai.definePrompt({
   name: 'timelineOfKeyMomentsPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: TimelineOfKeyMomentsOutputSchema},
   prompt: `Create a chronological timeline of the main discussion points and decisions from the transcript. Include timestamps if available. Use concise bullet points with who said what. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
 });
 
-export const risksPrompt = ai.definePrompt({
+export const defineRisksPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'risksAndConcernsPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: RisksAndConcernsOutputSchema},
   prompt: `From the transcript, identify any risks, concerns, or objections raised explicitly or implicitly. For each, explain which speaker raised it and why it matters. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
 });
 
-export const opportunitiesPrompt = ai.definePrompt({
+export const defineOpportunitiesPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'opportunitiesAndIdeasPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: OpportunitiesAndIdeasOutputSchema},
   prompt: `List all opportunities, ideas, or suggestions that came up in the conversation. Highlight which person suggested each idea and any next steps attached to it. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
 });
 
-export const sentimentPrompt = ai.definePrompt({
+export const defineSentimentPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'toneAndSentimentPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: ToneAndSentimentOutputSchema},

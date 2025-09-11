@@ -141,8 +141,8 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
       return;
     }
     
-    if (!data.apiKey) {
-      const errorMessage = 'Please enter your API key.';
+    if (data.provider === 'openai' && !data.apiKey) {
+      const errorMessage = 'Please enter your OpenAI API key.';
       toast({
         variant: 'destructive',
         title: 'API Key Required',
@@ -216,7 +216,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                  <div className="space-y-2">
                    <Label htmlFor="apiKey">
                     <KeyRound className="inline-block mr-2 h-4 w-4" />
-                     API Key
+                     API Key {provider === 'google' && '(Optional)'}
                    </Label>
                    <Input
                      id="apiKey"

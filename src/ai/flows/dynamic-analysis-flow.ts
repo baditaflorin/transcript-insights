@@ -9,34 +9,22 @@ import {googleAI} from '@genkit-ai/googleai';
 import {openAI} from 'genkitx-openai';
 import {z} from 'zod';
 import {
-  summaryPrompt,
-  perspectivesPrompt,
-  actionItemsPrompt,
-  openQuestionsPrompt,
-  timelinePrompt,
-  risksPrompt,
-  opportunitiesPrompt,
-  sentimentPrompt,
+  defineSummaryPrompt,
+  definePerspectivesPrompt,
+  defineActionItemsPrompt,
+  defineOpenQuestionsPrompt,
+  defineTimelinePrompt,
+  defineRisksPrompt,
+  defineOpportunitiesPrompt,
+  defineSentimentPrompt,
   AnalysisType,
 } from './prompts';
-
-// Define prompts for each analysis type
-const prompts = {
-  summary: summaryPrompt,
-  perspectives: perspectivesPrompt,
-  actionItems: actionItemsPrompt,
-  openQuestions: openQuestionsPrompt,
-  timeline: timelinePrompt,
-  risks: risksPrompt,
-  opportunities: opportunitiesPrompt,
-  sentiment: sentimentPrompt,
-};
 
 const DynamicAnalysisInputSchema = z.object({
   transcript: z.string(),
   selectedAnalyses: z.array(z.nativeEnum(AnalysisType)),
   provider: z.enum(['google', 'openai']),
-  apiKey: z.string(),
+  apiKey: z.string().optional(),
 });
 
 export type DynamicAnalysisInput = z.infer<typeof DynamicAnalysisInputSchema>;
@@ -51,10 +39,11 @@ export async function run(
   let model;
 
   if (provider === 'openai') {
+    if (!apiKey) throw new Error("OpenAI API key is required.");
     plugins.push(openAI({apiKey}));
     model = 'openai/gpt-4o-mini';
   } else {
-    plugins.push(googleAI({apiKey}));
+    plugins.push(googleAI(apiKey ? {apiKey} : undefined));
     model = 'googleai/gemini-2.5-flash';
   }
 
@@ -62,6 +51,19 @@ export async function run(
     plugins: plugins,
     model: model,
   });
+  
+  // Define prompts for each analysis type using the dynamic AI instance
+  const prompts = {
+    summary: defineSummaryPrompt(dynamicAi),
+    perspectives: definePerspectivesPrompt(dynamicAi),
+    actionItems: defineActionItemsPrompt(dynamicAi),
+    openQuestions: defineOpenQuestionsPrompt(dynamicAi),
+    timeline: defineTimelinePrompt(dynamicAi),
+    risks: defineRisksPrompt(dynamicAi),
+    opportunities: defineOpportunitiesPrompt(dynamicAi),
+    sentiment: defineSentimentPrompt(dynamicAi),
+  };
+
 
   const runFlow = dynamicAi.defineFlow(
     {
@@ -80,12 +82,8 @@ export async function run(
         }
 
         try {
-          const {stream, response} = prompt.stream({transcript});
-          for await (const chunk of stream) {
-            // We can still use onChunk for partial results if we want,
-            // but for now, we wait for the full response to ensure valid data.
-          }
-          const output = (await response)!;
+          const {response} = await prompt.stream({transcript});
+          const output = await response;
           if (onChunk) {
             onChunk({type, data: output});
           }

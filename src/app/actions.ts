@@ -58,8 +58,8 @@ export async function analyzeTranscript(
   if (selectedAnalyses.length === 0) {
     return {error: 'No analysis types were selected.'};
   }
-   if (!apiKey) {
-    return { error: 'API key is missing.' };
+   if (provider === 'openai' && !apiKey) {
+    return { error: 'API key is missing for OpenAI.' };
   }
 
   try {
