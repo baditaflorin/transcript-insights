@@ -18,8 +18,13 @@ const ExtractActionItemsInputSchema = z.object({
 });
 export type ExtractActionItemsInput = z.infer<typeof ExtractActionItemsInputSchema>;
 
+const ActionItemSchema = z.object({
+  speaker: z.string().describe('The speaker assigned the action item.'),
+  task: z.string().describe('The specific action item or task.'),
+});
+
 const ExtractActionItemsOutputSchema = z.object({
-  actionItems: z.record(z.string(), z.string()).describe('A checklist of action items for each speaker.'),
+  actionItems: z.array(ActionItemSchema).describe('A list of action items for each speaker.'),
 });
 export type ExtractActionItemsOutput = z.infer<typeof ExtractActionItemsOutputSchema>;
 
@@ -31,7 +36,7 @@ const prompt = ai.definePrompt({
   name: 'extractActionItemsPrompt',
   input: {schema: ExtractActionItemsInputSchema},
   output: {schema: ExtractActionItemsOutputSchema},
-  prompt: `Create a checklist of action items for each speaker based on the transcript.\nMake it specific, task-oriented, and assign clearly who is responsible.\nIf no tasks exist for a person, write \"No tasks.\".\n\nTranscript:\n{{{transcript}}}`,
+  prompt: `Create a checklist of action items for each speaker based on the transcript.\nMake it specific, task-oriented, and assign clearly who is responsible.\nIf no tasks exist for a person, you can omit them from the output.`,
 });
 
 const extractActionItemsFlow = ai.defineFlow(

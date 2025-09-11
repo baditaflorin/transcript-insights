@@ -26,9 +26,17 @@ const downloadFile = (content: string, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-const formatActionItems = (actionItems: Record<string, string>): string => {
-  return Object.entries(actionItems)
-    .map(([speaker, tasks]) => `## ${speaker}\n\n${tasks.replace(/- /g, '* ')}`)
+const formatActionItems = (actionItems: { speaker: string; task: string }[]): string => {
+  const groupedBySpeaker = actionItems.reduce((acc, item) => {
+    if (!acc[item.speaker]) {
+      acc[item.speaker] = [];
+    }
+    acc[item.speaker].push(`* ${item.task}`);
+    return acc;
+  }, {} as Record<string, string[]>);
+
+  return Object.entries(groupedBySpeaker)
+    .map(([speaker, tasks]) => `## ${speaker}\n\n${tasks.join('\n')}`)
     .join('\n\n');
 };
 
