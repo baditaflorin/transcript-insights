@@ -40,7 +40,7 @@ export async function run(
   if (provider === 'openai') {
     if (!apiKey) throw new Error("OpenAI API key is required.");
     plugins.push(openAI({apiKey}));
-    model = 'openai/gpt-5-mini-2025-08-07';
+    model = 'openai/gpt-4o-mini';
   } else {
     if (!apiKey) throw new Error("Google AI API key is required.");
     plugins.push(googleAI({apiKey}));
