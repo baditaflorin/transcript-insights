@@ -7,7 +7,7 @@
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
 import {openAI} from 'genkitx-openai';
-import {z} from 'genkit/zod';
+import {z} from 'zod';
 import {
   summaryPrompt,
   perspectivesPrompt,
@@ -41,51 +41,6 @@ const DynamicAnalysisInputSchema = z.object({
 
 export type DynamicAnalysisInput = z.infer<typeof DynamicAnalysisInputSchema>;
 
-const runFlow = genkit.defineFlow(
-  {
-    name: 'dynamicAnalysisFlow',
-    inputSchema: DynamicAnalysisInputSchema,
-    outputSchema: z.any(),
-  },
-  async (input, onChunk) => {
-    const {transcript, selectedAnalyses} = input;
-
-    const analysisPromises = selectedAnalyses.map(async type => {
-      const prompt = prompts[type];
-      if (!prompt) {
-        console.warn(`No prompt found for analysis type: ${type}`);
-        return;
-      }
-
-      try {
-        const {response} = await prompt.stream({transcript});
-        const output = (await response)!;
-        if (onChunk) {
-          onChunk({type, data: output});
-        }
-        return {type, data: output};
-      } catch (e: any) {
-        console.error(`Error in '${type}' analysis:`, e.message);
-        // Return error information to be handled by the caller
-        return {type, error: e.message};
-      }
-    });
-
-    const results = await Promise.all(analysisPromises);
-    const finalResult: Record<string, any> = {};
-
-    for (const result of results) {
-      if (result) {
-        if (result.error) {
-          finalResult[result.type] = {error: result.error};
-        } else {
-          finalResult[result.type] = result.data;
-        }
-      }
-    }
-    return finalResult;
-  }
-);
 
 export async function run(
   input: DynamicAnalysisInput,
@@ -108,5 +63,52 @@ export async function run(
     model: model,
   });
 
-  return runFlow.run(dynamicAi, input, onChunk);
+  const runFlow = dynamicAi.defineFlow(
+    {
+      name: 'dynamicAnalysisFlow',
+      inputSchema: DynamicAnalysisInputSchema,
+      outputSchema: z.any(),
+    },
+    async (input) => {
+      const {transcript, selectedAnalyses} = input;
+
+      const analysisPromises = selectedAnalyses.map(async type => {
+        const prompt = prompts[type];
+        if (!prompt) {
+          console.warn(`No prompt found for analysis type: ${type}`);
+          return;
+        }
+
+        try {
+          const {response} = await prompt.stream({transcript});
+          const output = (await response)!;
+          if (onChunk) {
+            onChunk({type, data: output});
+          }
+          return {type, data: output};
+        } catch (e: any) {
+          console.error(`Error in '${type}' analysis:`, e.message);
+          // Return error information to be handled by the caller
+          return {type, error: e.message};
+        }
+      });
+
+      const results = await Promise.all(analysisPromises);
+      const finalResult: Record<string, any> = {};
+
+      for (const result of results) {
+        if (result) {
+          if (result.error) {
+            finalResult[result.type] = {error: result.error};
+          } else {
+            finalResult[result.type] = result.data;
+          }
+        }
+      }
+      return finalResult;
+    }
+  );
+
+
+  return runFlow(input);
 }

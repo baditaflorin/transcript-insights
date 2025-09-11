@@ -1,11 +1,10 @@
-'use server';
 /**
  * @fileOverview This file contains all the prompt definitions for the various transcript analyses.
  * By centralizing them, they can be easily used by the dynamic analysis flow.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit/zod';
+import {z} from 'zod';
 
 // Enum for Analysis Types
 export const AnalysisType = {
