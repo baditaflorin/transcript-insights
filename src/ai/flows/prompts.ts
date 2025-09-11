@@ -172,7 +172,7 @@ export const defineOpenQuestionsPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'identifyOpenQuestionsPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: IdentifyOpenQuestionsOutputSchema},
-  prompt: `Identify any unanswered questions, unclear points, or topics that require follow-up from this conversation. For each item, identify the speaker who raised it. Phrase them as clear questions or reminders that can be used in the next meeting.\n\nTranscript:\n{{transcript}}`,
+  prompt: `Identify any unanswered questions, unclear points, or topics that require follow-up from this conversation. For each item, identify the speaker who raised it and what the question was. Phrase them as clear questions or reminders that can be used in the next meeting.\n\nTranscript:\n{{transcript}}`,
 });
 
 export const defineTimelinePrompt = (ai: Genkit) => ai.definePrompt({
