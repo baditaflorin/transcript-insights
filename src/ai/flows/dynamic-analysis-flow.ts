@@ -80,7 +80,11 @@ export async function run(
         }
 
         try {
-          const {response} = await prompt.stream({transcript});
+          const {stream, response} = prompt.stream({transcript});
+          for await (const chunk of stream) {
+            // We can still use onChunk for partial results if we want,
+            // but for now, we wait for the full response to ensure valid data.
+          }
           const output = (await response)!;
           if (onChunk) {
             onChunk({type, data: output});
