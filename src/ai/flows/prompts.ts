@@ -1,0 +1,151 @@
+'use server';
+/**
+ * @fileOverview This file contains all the prompt definitions for the various transcript analyses.
+ * By centralizing them, they can be easily used by the dynamic analysis flow.
+ */
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit/zod';
+
+// Enum for Analysis Types
+export const AnalysisType = {
+  SUMMARY: 'summary',
+  PERSPECTIVES: 'perspectives',
+  ACTION_ITEMS: 'actionItems',
+  OPEN_QUESTIONS: 'openQuestions',
+  TIMELINE: 'timeline',
+  RISKS: 'risks',
+  OPPORTUNITIES: 'opportunities',
+  SENTIMENT: 'sentiment',
+} as const;
+
+// Schemas for Inputs
+const TranscriptInputSchema = z.object({
+  transcript: z.string(),
+});
+
+// Schemas for Outputs
+const SummarizeTranscriptOutputSchema = z.object({
+  summary: z
+    .string()
+    .describe(
+      'A concise summary of the conversation. Format the output as Markdown.'
+    ),
+});
+
+const AnalyzeConversationPerspectivesOutputSchema = z.object({
+  analysis: z
+    .string()
+    .describe(
+      'An explanation of the conversation from each speaker’s point of view, identifying their goals and contributions. Format the output as Markdown.'
+    ),
+});
+
+const ActionItemSchema = z.object({
+  speaker: z.string().describe('The speaker assigned the action item.'),
+  task: z.string().describe('The specific action item or task.'),
+});
+
+const ExtractActionItemsOutputSchema = z.object({
+  actionItems: z
+    .array(ActionItemSchema)
+    .describe('A list of action items for each speaker.'),
+});
+
+const IdentifyOpenQuestionsOutputSchema = z.object({
+  openQuestions: z
+    .string()
+    .describe(
+      'A list of unanswered questions, unclear points, or topics that require follow-up from this conversation, phrased as clear questions or reminders that can be used in the next meeting. Format the output as Markdown.'
+    ),
+});
+
+const TimelineOfKeyMomentsOutputSchema = z.object({
+  timeline: z
+    .string()
+    .describe(
+      'A chronological timeline of the main discussion points and decisions from the transcript. Include timestamps if available. Use concise bullet points with who said what. Format as Markdown.'
+    ),
+});
+
+const RisksAndConcernsOutputSchema = z.object({
+  risksAndConcerns: z
+    .string()
+    .describe(
+      'A list of any risks, concerns, or objections raised explicitly or implicitly. For each, explain which speaker raised it and why it matters. Format as Markdown.'
+    ),
+});
+
+const OpportunitiesAndIdeasOutputSchema = z.object({
+  opportunitiesAndIdeas: z
+    .string()
+    .describe(
+      'A list of all opportunities, ideas, or suggestions that came up in the conversation. Highlight which person suggested each idea and any next steps attached to it. Format as Markdown.'
+    ),
+});
+
+const ToneAndSentimentOutputSchema = z.object({
+  sentiment: z
+    .string()
+    .describe(
+      'An analysis of the overall tone and sentiment of the conversation. Describe how each speaker felt during the conversation (positive, neutral, concerned, skeptical, enthusiastic, etc.) and support with evidence from their words. Format as Markdown.'
+    ),
+});
+
+
+// Prompt Definitions
+export const summaryPrompt = ai.definePrompt({
+  name: 'summarizeTranscriptPrompt',
+  input: {schema: TranscriptInputSchema},
+  output: {schema: SummarizeTranscriptOutputSchema},
+  prompt: `Summarize the following conversation. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+});
+
+export const perspectivesPrompt = ai.definePrompt({
+  name: 'analyzeConversationPerspectivesPrompt',
+  input: {schema: TranscriptInputSchema},
+  output: {schema: AnalyzeConversationPerspectivesOutputSchema},
+  prompt: `Explain the conversation from both speakers’ point of view. Focus on what each person wanted, asked, and contributed. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+});
+
+export const actionItemsPrompt = ai.definePrompt({
+  name: 'extractActionItemsPrompt',
+  input: {schema: TranscriptInputSchema},
+  output: {schema: ExtractActionItemsOutputSchema},
+  prompt: `Create a checklist of action items for each speaker based on the transcript. Make it specific, task-oriented, and assign clearly who is responsible. If no tasks exist for a person, you can omit them from the output.`,
+});
+
+export const openQuestionsPrompt = ai.definePrompt({
+  name: 'identifyOpenQuestionsPrompt',
+  input: {schema: TranscriptInputSchema},
+  output: {schema: IdentifyOpenQuestionsOutputSchema},
+  prompt: `Identify any unanswered questions, unclear points, or topics that require follow-up from this conversation. Phrase them as clear questions or reminders that can be used in the next meeting. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+});
+
+export const timelinePrompt = ai.definePrompt({
+  name: 'timelineOfKeyMomentsPrompt',
+  input: {schema: TranscriptInputSchema},
+  output: {schema: TimelineOfKeyMomentsOutputSchema},
+  prompt: `Create a chronological timeline of the main discussion points and decisions from the transcript. Include timestamps if available. Use concise bullet points with who said what. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+});
+
+export const risksPrompt = ai.definePrompt({
+  name: 'risksAndConcernsPrompt',
+  input: {schema: TranscriptInputSchema},
+  output: {schema: RisksAndConcernsOutputSchema},
+  prompt: `From the transcript, identify any risks, concerns, or objections raised explicitly or implicitly. For each, explain which speaker raised it and why it matters. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+});
+
+export const opportunitiesPrompt = ai.definePrompt({
+  name: 'opportunitiesAndIdeasPrompt',
+  input: {schema: TranscriptInputSchema},
+  output: {schema: OpportunitiesAndIdeasOutputSchema},
+  prompt: `List all opportunities, ideas, or suggestions that came up in the conversation. Highlight which person suggested each idea and any next steps attached to it. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+});
+
+export const sentimentPrompt = ai.definePrompt({
+  name: 'toneAndSentimentPrompt',
+  input: {schema: TranscriptInputSchema},
+  output: {schema: ToneAndSentimentOutputSchema},
+  prompt: `Analyze the overall tone and sentiment of the conversation. Describe how each speaker felt during the conversation (positive, neutral, concerned, skeptical, enthusiastic, etc.) and support with evidence from their words. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+});

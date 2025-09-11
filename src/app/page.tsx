@@ -14,7 +14,8 @@ import {
   RisksAndConcernsOutput,
   OpportunitiesAndIdeasOutput,
   ToneAndSentimentOutput,
-} from '@/app/actions';
+} from './actions';
+
 
 export const analysisTypes = [
   'summary',

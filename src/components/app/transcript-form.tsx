@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Loader2, Upload, RotateCw } from 'lucide-react';
+import { Loader2, Upload, RotateCw, KeyRound, BrainCircuit } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,10 +16,13 @@ import { useToast } from '@/hooks/use-toast';
 import { analyzeTranscript, type AnalysisResult } from '@/app/actions';
 import { Card, CardContent } from '@/components/ui/card';
 import { StreamingAnalysisResult, analysisTypes, AnalysisType } from '@/app/page';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 const formSchema = z.object({
   transcript: z.string().optional(),
   file: z.any().optional(),
+  apiKey: z.string().optional(),
+  provider: z.enum(['google', 'openai']).default('google'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -55,7 +58,12 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      provider: 'google',
+    }
   });
+
+  const provider = form.watch('provider');
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -66,7 +74,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
   };
   
   const resetForm = () => {
-    form.reset();
+    form.reset({ provider: form.getValues('provider'), apiKey: form.getValues('apiKey') });
     setFileName('');
     setAnalysisStarted(false);
     onReset();
@@ -132,9 +140,22 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
       setAnalysisStarted(false);
       return;
     }
+    
+    if (!data.apiKey) {
+      const errorMessage = 'Please enter your API key.';
+      toast({
+        variant: 'destructive',
+        title: 'API Key Required',
+        description: errorMessage,
+      });
+      setError(errorMessage);
+      setIsLoading(false);
+      setAnalysisStarted(false);
+      return;
+    }
 
 
-    const result = await analyzeTranscript(transcriptText, selectedAnalyses, (chunk) => {
+    const result = await analyzeTranscript(transcriptText, selectedAnalyses, data.provider, data.apiKey, (chunk) => {
       setStreamingResults(prev => {
         const newResults: StreamingAnalysisResult = prev ? {...prev} : {
             perspectives: null,
@@ -170,8 +191,46 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
     <Card className="shadow-md">
       <CardContent className="p-0">
         <form onSubmit={form.handleSubmit(onSubmit)}>
+           <div className="p-6 space-y-4 border-b">
+              <h3 className="text-base font-semibold text-foreground/80">AI Configuration</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="provider">
+                    <BrainCircuit className="inline-block mr-2 h-4 w-4" />
+                    AI Provider
+                  </Label>
+                  <Select
+                    value={form.watch('provider')}
+                    onValueChange={(value) => form.setValue('provider', value as 'google' | 'openai')}
+                    disabled={analysisStarted}
+                  >
+                    <SelectTrigger id="provider">
+                      <SelectValue placeholder="Select a provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="google">Google AI</SelectItem>
+                      <SelectItem value="openai">OpenAI</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="apiKey">
+                    <KeyRound className="inline-block mr-2 h-4 w-4" />
+                     API Key
+                   </Label>
+                   <Input
+                     id="apiKey"
+                     type="password"
+                     placeholder={provider === 'google' ? "Enter your Google AI API Key" : "Enter your OpenAI API Key"}
+                     {...form.register('apiKey')}
+                     readOnly={analysisStarted}
+                   />
+                 </div>
+              </div>
+           </div>
+
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-none rounded-t-lg h-12">
+            <TabsList className="grid w-full grid-cols-2 rounded-none h-12">
               <TabsTrigger value="paste" disabled={analysisStarted}>Paste Text</TabsTrigger>
               <TabsTrigger value="upload" disabled={analysisStarted}>Upload File</TabsTrigger>
             </TabsList>
