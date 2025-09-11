@@ -60,15 +60,18 @@ export const ExtractActionItemsOutputSchema = z.object({
 });
 export type ExtractActionItemsOutput = z.infer<typeof ExtractActionItemsOutputSchema>;
 
+const OpenQuestionSchema = z.object({
+  speaker: z.string().describe('The speaker who raised the question or whose point is unclear.'),
+  question: z.string().describe('The specific unanswered question, unclear point, or topic for follow-up.'),
+});
 
 export const IdentifyOpenQuestionsOutputSchema = z.object({
   openQuestions: z
-    .string()
-    .describe(
-      'A list of unanswered questions, unclear points, or topics that require follow-up from this conversation, phrased as clear questions or reminders that can be used in the next meeting. Format the output as Markdown.'
-    ),
+    .array(OpenQuestionSchema)
+    .describe('A list of unanswered questions, grouped by the speaker who raised them.'),
 });
 export type IdentifyOpenQuestionsOutput = z.infer<typeof IdentifyOpenQuestionsOutputSchema>;
+
 
 export const TimelineOfKeyMomentsOutputSchema = z.object({
   timeline: z
@@ -169,7 +172,7 @@ export const defineOpenQuestionsPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'identifyOpenQuestionsPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: IdentifyOpenQuestionsOutputSchema},
-  prompt: `Identify any unanswered questions, unclear points, or topics that require follow-up from this conversation. Phrase them as clear questions or reminders that can be used in the next meeting. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+  prompt: `Identify any unanswered questions, unclear points, or topics that require follow-up from this conversation. For each item, identify the speaker who raised it. Phrase them as clear questions or reminders that can be used in the next meeting.\n\nTranscript:\n{{transcript}}`,
 });
 
 export const defineTimelinePrompt = (ai: Genkit) => ai.definePrompt({
