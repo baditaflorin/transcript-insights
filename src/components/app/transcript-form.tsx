@@ -54,7 +54,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('paste');
   const [fileName, setFileName] = useState('');
-  const [analysisStarted, setAnalysisStarted] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -73,13 +72,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
     }
   };
   
-  const resetForm = () => {
-    form.reset({ provider: form.getValues('provider'), apiKey: form.getValues('apiKey') });
-    setFileName('');
-    setAnalysisStarted(false);
-    onReset();
-  };
-  
   const handleAnalysisToggle = (analysis: AnalysisType) => {
     const newSelection = selectedAnalyses.includes(analysis)
       ? selectedAnalyses.filter(item => item !== analysis)
@@ -88,11 +80,8 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
   };
 
   const onSubmit = async (data: FormValues) => {
+    onReset();
     setIsLoading(true);
-    setResults(null);
-    setStreamingResults(null);
-    setError(null);
-    setAnalysisStarted(true);
 
     let transcriptText = '';
 
@@ -110,7 +99,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
         });
         setError(errorMessage);
         setIsLoading(false);
-        setAnalysisStarted(false);
         return;
       }
     }
@@ -124,7 +112,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
       });
       setError(errorMessage);
       setIsLoading(false);
-      setAnalysisStarted(false);
       return;
     }
     
@@ -137,7 +124,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
       });
       setError(errorMessage);
       setIsLoading(false);
-      setAnalysisStarted(false);
       return;
     }
     
@@ -150,7 +136,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
       });
       setError(errorMessage);
       setIsLoading(false);
-      setAnalysisStarted(false);
       return;
     }
 
@@ -202,7 +187,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                   <Select
                     value={form.watch('provider')}
                     onValueChange={(value) => form.setValue('provider', value as 'google' | 'openai')}
-                    disabled={analysisStarted}
+                    disabled={isLoading}
                   >
                     <SelectTrigger id="provider">
                       <SelectValue placeholder="Select a provider" />
@@ -216,14 +201,14 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                  <div className="space-y-2">
                    <Label htmlFor="apiKey">
                     <KeyRound className="inline-block mr-2 h-4 w-4" />
-                     API Key {provider === 'google' && '(Optional)'}
+                     API Key {provider === 'google' ? '(Optional)' : '(Required)'}
                    </Label>
                    <Input
                      id="apiKey"
                      type="password"
                      placeholder={provider === 'google' ? "Enter your Google AI API Key" : "Enter your OpenAI API Key"}
                      {...form.register('apiKey')}
-                     readOnly={analysisStarted}
+                     readOnly={isLoading}
                    />
                  </div>
               </div>
@@ -231,8 +216,8 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 rounded-none h-12">
-              <TabsTrigger value="paste" disabled={analysisStarted}>Paste Text</TabsTrigger>
-              <TabsTrigger value="upload" disabled={analysisStarted}>Upload File</TabsTrigger>
+              <TabsTrigger value="paste" disabled={isLoading}>Paste Text</TabsTrigger>
+              <TabsTrigger value="upload" disabled={isLoading}>Upload File</TabsTrigger>
             </TabsList>
             <div className="p-6">
               <TabsContent value="paste" className="m-0">
@@ -240,14 +225,14 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                   placeholder="Paste your meeting or conversation transcript here..."
                   className="min-h-[200px] text-base"
                   {...form.register('transcript')}
-                  readOnly={analysisStarted}
+                  readOnly={isLoading}
                 />
               </TabsContent>
               <TabsContent value="upload" className="m-0">
                 <div className="flex flex-col items-center justify-center w-full gap-4">
                   <Label
                     htmlFor="file-upload"
-                    className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg bg-card ${analysisStarted ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-muted'}`}
+                    className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg bg-card ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-muted'}`}
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
@@ -256,7 +241,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                       </p>
                       <p className="text-xs text-muted-foreground">TXT, MD or any text file</p>
                     </div>
-                    <Input id="file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".txt,.md,text/plain" disabled={analysisStarted} />
+                    <Input id="file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".txt,.md,text/plain" disabled={isLoading} />
                   </Label>
                   {fileName && <p className="text-sm text-muted-foreground">File: {fileName}</p>}
                 </div>
@@ -271,7 +256,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                         id={analysis}
                         checked={selectedAnalyses.includes(analysis)}
                         onCheckedChange={() => handleAnalysisToggle(analysis)}
-                        disabled={analysisStarted}
+                        disabled={isLoading}
                       />
                       <label
                         htmlFor={analysis}
@@ -284,24 +269,16 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                 </div>
               </div>
 
-
-              {analysisStarted ? (
-                 <Button type="button" onClick={resetForm} className="w-full mt-6 h-12 text-base font-semibold" variant="outline">
-                  <RotateCw className="mr-2 h-5 w-5" />
-                  Start Over
-                </Button>
-              ) : (
-                <Button type="submit" disabled={isLoading} className="w-full mt-6 h-12 text-base font-semibold bg-accent text-accent-foreground hover:bg-accent/90">
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    'Analyze Transcript'
-                  )}
-                </Button>
-              )}
+              <Button type="submit" disabled={isLoading} className="w-full mt-6 h-12 text-base font-semibold bg-accent text-accent-foreground hover:bg-accent/90">
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  'Analyze Transcript'
+                )}
+              </Button>
             </div>
           </Tabs>
         </form>
