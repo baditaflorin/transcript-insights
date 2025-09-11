@@ -11,10 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { analyzeTranscript, type AnalysisResult } from '@/app/actions';
 import { Card, CardContent } from '@/components/ui/card';
-import { StreamingAnalysisResult } from '@/app/page';
+import { StreamingAnalysisResult, analysisTypes, AnalysisType } from '@/app/page';
 
 const formSchema = z.object({
   transcript: z.string().optional(),
@@ -30,9 +31,23 @@ interface TranscriptFormProps {
   isLoading: boolean;
   setError: (error: string | null) => void;
   onReset: () => void;
+  selectedAnalyses: AnalysisType[];
+  setSelectedAnalyses: (analyses: AnalysisType[]) => void;
 }
 
-export default function TranscriptForm({ setResults, setIsLoading, isLoading, setError, setStreamingResults, onReset }: TranscriptFormProps) {
+const analysisLabels: Record<AnalysisType, string> = {
+    summary: 'Summary',
+    perspectives: 'Perspectives',
+    actionItems: 'Action Items',
+    openQuestions: 'Open Questions',
+    timeline: 'Timeline',
+    risks: 'Risks & Concerns',
+    opportunities: 'Opportunities',
+    sentiment: 'Sentiment',
+};
+
+
+export default function TranscriptForm({ setResults, setIsLoading, isLoading, setError, setStreamingResults, onReset, selectedAnalyses, setSelectedAnalyses }: TranscriptFormProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('paste');
   const [fileName, setFileName] = useState('');
@@ -41,7 +56,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
-
+  
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -55,6 +70,13 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
     setFileName('');
     setAnalysisStarted(false);
     onReset();
+  };
+  
+  const handleAnalysisToggle = (analysis: AnalysisType) => {
+    const newSelection = selectedAnalyses.includes(analysis)
+      ? selectedAnalyses.filter(item => item !== analysis)
+      : [...selectedAnalyses, analysis];
+    setSelectedAnalyses(newSelection);
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -97,22 +119,35 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
       setAnalysisStarted(false);
       return;
     }
+    
+    if (selectedAnalyses.length === 0) {
+      const errorMessage = 'Please select at least one analysis type.';
+       toast({
+        variant: 'destructive',
+        title: 'Analysis Required',
+        description: errorMessage,
+      });
+      setError(errorMessage);
+      setIsLoading(false);
+      setAnalysisStarted(false);
+      return;
+    }
 
-    const result = await analyzeTranscript(transcriptText, (chunk) => {
+
+    const result = await analyzeTranscript(transcriptText, selectedAnalyses, (chunk) => {
       setStreamingResults(prev => {
-        if (!prev) {
-          return {
+        const newResults: StreamingAnalysisResult = prev ? {...prev} : {
             perspectives: null,
             actionItems: null,
             openQuestions: null,
             summary: null,
-            [chunk.type]: chunk.data,
-          };
-        }
-        return {
-          ...prev,
-          [chunk.type]: chunk.data,
+            timeline: null,
+            risks: null,
+            opportunities: null,
+            sentiment: null,
         };
+        (newResults as any)[chunk.type] = chunk.data;
+        return newResults;
       });
     });
 
@@ -167,6 +202,29 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                   {fileName && <p className="text-sm text-muted-foreground">File: {fileName}</p>}
                 </div>
               </TabsContent>
+
+              <div className="mt-6 space-y-4">
+                <h3 className="text-base font-semibold text-foreground/80">Select Analyses</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {analysisTypes.map((analysis) => (
+                    <div key={analysis} className="flex items-center space-x-2">
+                       <Checkbox
+                        id={analysis}
+                        checked={selectedAnalyses.includes(analysis)}
+                        onCheckedChange={() => handleAnalysisToggle(analysis)}
+                        disabled={analysisStarted}
+                      />
+                      <label
+                        htmlFor={analysis}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {analysisLabels[analysis]}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
 
               {analysisStarted ? (
                  <Button type="button" onClick={resetForm} className="w-full mt-6 h-12 text-base font-semibold" variant="outline">

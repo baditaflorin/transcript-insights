@@ -47,8 +47,7 @@ const prompt = ai.definePrompt({
   output: {schema: ExtractActionItemsOutputSchema},
   prompt: `Create a checklist of action items for each speaker based on the transcript.
 Make it specific, task-oriented, and assign clearly who is responsible.
-If no tasks exist for a person, you can omit them from the output.
-Format the output as a Markdown checklist.`,
+If no tasks exist for a person, you can omit them from the output.`,
 });
 
 const extractActionItemsFlow = ai.defineFlow(

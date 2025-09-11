@@ -9,14 +9,35 @@ import {
   AnalyzeConversationPerspectivesOutput,
   ExtractActionItemsOutput,
   IdentifyOpenQuestionsOutput,
-  SummarizeTranscriptOutput
+  SummarizeTranscriptOutput,
+  TimelineOfKeyMomentsOutput,
+  RisksAndConcernsOutput,
+  OpportunitiesAndIdeasOutput,
+  ToneAndSentimentOutput,
 } from '@/app/actions';
+
+export const analysisTypes = [
+  'summary',
+  'perspectives',
+  'actionItems',
+  'openQuestions',
+  'timeline',
+  'risks',
+  'opportunities',
+  'sentiment',
+] as const;
+
+export type AnalysisType = (typeof analysisTypes)[number];
 
 export type StreamingAnalysisResult = {
   perspectives: AnalyzeConversationPerspectivesOutput | null;
   actionItems: ExtractActionItemsOutput | null;
   openQuestions: IdentifyOpenQuestionsOutput | null;
   summary: SummarizeTranscriptOutput | null;
+  timeline: TimelineOfKeyMomentsOutput | null;
+  risks: RisksAndConcernsOutput | null;
+  opportunities: OpportunitiesAndIdeasOutput | null;
+  sentiment: ToneAndSentimentOutput | null;
 };
 
 export default function Home() {
@@ -24,6 +45,7 @@ export default function Home() {
   const [streamingResults, setStreamingResults] = useState<StreamingAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedAnalyses, setSelectedAnalyses] = useState<AnalysisType[]>(['summary', 'perspectives', 'actionItems', 'openQuestions']);
 
   const handleReset = () => {
     setResults(null);
@@ -45,6 +67,8 @@ export default function Home() {
               setError={setError}
               setStreamingResults={setStreamingResults}
               onReset={handleReset}
+              selectedAnalyses={selectedAnalyses}
+              setSelectedAnalyses={setSelectedAnalyses}
             />
           </div>
           <div className="flex flex-col gap-6">
@@ -54,6 +78,7 @@ export default function Home() {
               streamingResults={streamingResults}
               isLoading={isLoading}
               error={error}
+              selectedAnalyses={selectedAnalyses}
             />
           </div>
         </div>
