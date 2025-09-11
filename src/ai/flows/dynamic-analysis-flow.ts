@@ -17,8 +17,8 @@ import {
   defineRisksPrompt,
   defineOpportunitiesPrompt,
   defineSentimentPrompt,
+  AnalysisType,
 } from './prompts';
-import type { AnalysisType } from './prompts';
 
 const DynamicAnalysisInputSchema = z.object({
   transcript: z.string(),
@@ -44,12 +44,12 @@ export async function run(
   } else {
     if (!apiKey) throw new Error("Google AI API key is required.");
     plugins.push(googleAI({apiKey}));
-    model = 'googleai/gemini-2.5-flash';
+    model = 'google/gemini-1.5-flash';
   }
 
   const dynamicAi = genkit({
     plugins: plugins,
-    model: model,
+    // model: model, //This is not a valid property for genkit()
   });
   
   // Define prompts for each analysis type using the dynamic AI instance
@@ -82,7 +82,7 @@ export async function run(
         }
 
         try {
-          const {output} = await prompt({transcript});
+          const {output} = await prompt({transcript}, {model});
           return {type, data: output};
         } catch (e: any) {
           console.error(`Error in '${type}' analysis:`, e.message);
