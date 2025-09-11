@@ -1,15 +1,17 @@
 "use client";
 
-import { CheckSquare, Download, MessageCircleQuestion, Users } from 'lucide-react';
+import { CheckSquare, Download, MessageCircleQuestion, Users, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AnalysisResult } from '@/app/actions';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface AnalysisResultsProps {
   results: AnalysisResult | null;
   isLoading: boolean;
+  error: string | null;
 }
 
 const downloadFile = (content: string, filename: string) => {
@@ -68,7 +70,22 @@ const ResultCard = ({ title, description, icon: Icon, content, filename, isLoadi
   </Card>
 );
 
-export default function AnalysisResults({ results, isLoading }: AnalysisResultsProps) {
+export default function AnalysisResults({ results, isLoading, error }: AnalysisResultsProps) {
+  if (error) {
+    return (
+        <Alert variant="destructive" className="shadow-md">
+            <AlertTriangle className="h-5 w-5" />
+            <AlertTitle>Analysis Error</AlertTitle>
+            <AlertDescription>
+                <p>An unexpected error occurred. You can copy the details below for debugging.</p>
+                <pre className="mt-4 whitespace-pre-wrap font-code text-xs bg-destructive/20 p-4 rounded-lg">
+                    {error}
+                </pre>
+            </AlertDescription>
+        </Alert>
+    );
+  }
+
   if (!results && !isLoading) {
     return (
       <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card">

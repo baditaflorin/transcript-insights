@@ -9,6 +9,7 @@ import type { AnalysisResult } from '@/app/actions';
 export default function Home() {
   const [results, setResults] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -17,11 +18,11 @@ export default function Home() {
         <div className="grid gap-12 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Input Transcript</h2>
-            <TranscriptForm setResults={setResults} setIsLoading={setIsLoading} isLoading={isLoading} />
+            <TranscriptForm setResults={setResults} setIsLoading={setIsLoading} isLoading={isLoading} setError={setError} />
           </div>
           <div className="flex flex-col gap-6">
              <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
-            <AnalysisResults results={results} isLoading={isLoading} />
+            <AnalysisResults results={results} isLoading={isLoading} error={error} />
           </div>
         </div>
       </main>

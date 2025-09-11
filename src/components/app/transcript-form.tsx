@@ -26,9 +26,10 @@ interface TranscriptFormProps {
   setResults: (results: AnalysisResult | null) => void;
   setIsLoading: (isLoading: boolean) => void;
   isLoading: boolean;
+  setError: (error: string | null) => void;
 }
 
-export default function TranscriptForm({ setResults, setIsLoading, isLoading }: TranscriptFormProps) {
+export default function TranscriptForm({ setResults, setIsLoading, isLoading, setError }: TranscriptFormProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('paste');
   const [fileName, setFileName] = useState('');
@@ -48,6 +49,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading }: 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
     setResults(null);
+    setError(null);
     let transcriptText = '';
 
     if (activeTab === 'paste') {
@@ -56,22 +58,26 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading }: 
       try {
         transcriptText = await data.file.text();
       } catch (error) {
+        const errorMessage = 'Could not read the uploaded file. Please ensure it is a valid text file.';
         toast({
           variant: 'destructive',
           title: 'Error reading file',
-          description: 'Could not read the uploaded file. Please ensure it is a valid text file.',
+          description: errorMessage,
         });
+        setError(errorMessage);
         setIsLoading(false);
         return;
       }
     }
 
     if (!transcriptText.trim()) {
+      const errorMessage = 'Please paste a transcript or upload a file.';
       toast({
         variant: 'destructive',
         title: 'Input required',
-        description: 'Please paste a transcript or upload a file.',
+        description: errorMessage,
       });
+      setError(errorMessage);
       setIsLoading(false);
       return;
     }
@@ -82,11 +88,13 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading }: 
       toast({
         variant: 'destructive',
         title: 'Analysis Failed',
-        description: result.error,
+        description: 'An unexpected error occurred. See details below.',
       });
+      setError(result.error);
       setResults(null);
     } else {
       setResults(result);
+      setError(null);
     }
     setIsLoading(false);
   };
