@@ -17,78 +17,90 @@ export const AnalysisType = {
   SENTIMENT: 'sentiment',
 } as const;
 
+export type AnalysisType = (typeof AnalysisType)[keyof typeof AnalysisType];
+
+
 // Schemas for Inputs
 const TranscriptInputSchema = z.object({
   transcript: z.string(),
 });
 
 // Schemas for Outputs
-const SummarizeTranscriptOutputSchema = z.object({
+export const SummarizeTranscriptOutputSchema = z.object({
   summary: z
     .string()
     .describe(
       'A concise summary of the conversation. Format the output as Markdown.'
     ),
 });
+export type SummarizeTranscriptOutput = z.infer<typeof SummarizeTranscriptOutputSchema>;
 
-const AnalyzeConversationPerspectivesOutputSchema = z.object({
+export const AnalyzeConversationPerspectivesOutputSchema = z.object({
   analysis: z
     .string()
     .describe(
       'An explanation of the conversation from each speaker’s point of view, identifying their goals and contributions. Format the output as Markdown.'
     ),
 });
+export type AnalyzeConversationPerspectivesOutput = z.infer<typeof AnalyzeConversationPerspectivesOutputSchema>;
 
 const ActionItemSchema = z.object({
   speaker: z.string().describe('The speaker assigned the action item.'),
   task: z.string().describe('The specific action item or task.'),
 });
 
-const ExtractActionItemsOutputSchema = z.object({
+export const ExtractActionItemsOutputSchema = z.object({
   actionItems: z
     .array(ActionItemSchema)
     .describe('A list of action items for each speaker.'),
 });
+export type ExtractActionItemsOutput = z.infer<typeof ExtractActionItemsOutputSchema>;
 
-const IdentifyOpenQuestionsOutputSchema = z.object({
+
+export const IdentifyOpenQuestionsOutputSchema = z.object({
   openQuestions: z
     .string()
     .describe(
       'A list of unanswered questions, unclear points, or topics that require follow-up from this conversation, phrased as clear questions or reminders that can be used in the next meeting. Format the output as Markdown.'
     ),
 });
+export type IdentifyOpenQuestionsOutput = z.infer<typeof IdentifyOpenQuestionsOutputSchema>;
 
-const TimelineOfKeyMomentsOutputSchema = z.object({
+export const TimelineOfKeyMomentsOutputSchema = z.object({
   timeline: z
     .string()
     .describe(
       'A chronological timeline of the main discussion points and decisions from the transcript. Include timestamps if available. Use concise bullet points with who said what. Format as Markdown.'
     ),
 });
+export type TimelineOfKeyMomentsOutput = z.infer<typeof TimelineOfKeyMomentsOutputSchema>;
 
-const RisksAndConcernsOutputSchema = z.object({
+export const RisksAndConcernsOutputSchema = z.object({
   risksAndConcerns: z
     .string()
     .describe(
       'A list of any risks, concerns, or objections raised explicitly or implicitly. For each, explain which speaker raised it and why it matters. Format as Markdown.'
     ),
 });
+export type RisksAndConcernsOutput = z.infer<typeof RisksAndConcernsOutputSchema>;
 
-const OpportunitiesAndIdeasOutputSchema = z.object({
+export const OpportunitiesAndIdeasOutputSchema = z.object({
   opportunitiesAndIdeas: z
     .string()
     .describe(
       'A list of all opportunities, ideas, or suggestions that came up in the conversation. Highlight which person suggested each idea and any next steps attached to it. Format as Markdown.'
     ),
 });
+export type OpportunitiesAndIdeasOutput = z.infer<typeof OpportunitiesAndIdeasOutputSchema>;
 
-const ToneAndSentimentOutputSchema = z.object({
+export const ToneAndSentimentOutputSchema = z.object({
   sentiment: z
     .string()
     .describe(
       'An analysis of the overall tone and sentiment of the conversation. Describe how each speaker felt during the conversation (positive, neutral, concerned, skeptical, enthusiastic, etc.) and support with evidence from their words. Format as Markdown.'
     ),
 });
+export type ToneAndSentimentOutput = z.infer<typeof ToneAndSentimentOutputSchema>;
 
 
 // Prompt Definitions
@@ -110,7 +122,7 @@ export const defineActionItemsPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'extractActionItemsPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: ExtractActionItemsOutputSchema},
-  prompt: `Create a checklist of action items for each speaker based on the transcript. Make it specific, task-oriented, and assign clearly who is responsible. If no tasks exist for a person, you can omit them from the output.`,
+  prompt: `Create a checklist of action items for each speaker based on the transcript. Make it specific, task-oriented, and assign clearly who is responsible. If no tasks exist for a person, you can omit them from the output.\n\nTranscript:\n{{transcript}}`,
 });
 
 export const defineOpenQuestionsPrompt = (ai: Genkit) => ai.definePrompt({
