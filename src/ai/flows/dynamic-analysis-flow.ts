@@ -4,9 +4,6 @@
  * based on user selection and configure the AI provider at runtime.
  */
 
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
-import {openAI} from 'genkitx-openai';
 import {z} from 'zod';
 import {
   AnalysisType,
@@ -23,6 +20,7 @@ import {
   defineKnowledgeGapsPrompt,
   defineCommunicationPatternsPrompt,
 } from './prompts';
+import { configureAi } from './utils';
 
 const DynamicAnalysisInputSchema = z.object({
   transcript: z.string(),
@@ -33,27 +31,14 @@ const DynamicAnalysisInputSchema = z.object({
 
 export type DynamicAnalysisInput = z.infer<typeof DynamicAnalysisInputSchema>;
 
-
 export async function run(
   input: DynamicAnalysisInput
 ) {
   const {provider, apiKey} = input;
-  const plugins = [];
-  let model;
+  
+  const dynamicAi = configureAi(provider, apiKey);
+  const model = provider === 'openai' ? 'openai/gpt-4o-mini' : 'google/gemini-1.5-flash';
 
-  if (provider === 'openai') {
-    if (!apiKey) throw new Error("OpenAI API key is required.");
-    plugins.push(openAI({apiKey}));
-    model = 'openai/gpt-4o-mini';
-  } else {
-    if (!apiKey) throw new Error("Google AI API key is required.");
-    plugins.push(googleAI({apiKey}));
-    model = 'google/gemini-1.5-flash';
-  }
-
-  const dynamicAi = genkit({
-    plugins: plugins,
-  });
   
   // Define prompts for each analysis type using the dynamic AI instance
   const prompts = {

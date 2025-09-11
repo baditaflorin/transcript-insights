@@ -21,6 +21,22 @@ import type {
   KnowledgeGapsOutput,
   CommunicationPatternsOutput,
 } from '@/ai/flows/prompts';
+import { generateFilename as generateFilenameFlow } from '@/ai/flows/generate-filename-flow';
+import {z} from 'zod';
+
+export const GenerateFilenameInputSchema = z.object({
+  transcript: z.string(),
+  provider: z.enum(['google', 'openai']),
+  apiKey: z.string(),
+});
+export type GenerateFilenameInput = z.infer<typeof GenerateFilenameInputSchema>;
+
+export const GenerateFilenameOutputSchema = z.object({
+  filename: z.string(),
+});
+export type GenerateFilenameOutput = z.infer<
+  typeof GenerateFilenameOutputSchema
+>;
 
 
 export type {
@@ -86,5 +102,22 @@ export async function analyzeTranscript(
     return {
       error: `An unexpected error occurred while analyzing the transcript: ${e.message}`,
     };
+  }
+}
+
+export async function generateFilename(
+  transcript: string,
+  provider: 'google' | 'openai',
+  apiKey: string
+): Promise<GenerateFilenameOutput | { error: string }> {
+  if (!transcript) {
+    return { filename: 'analysis-bundle.md' }; // fallback
+  }
+  try {
+    const result = await generateFilenameFlow({ transcript, provider, apiKey });
+    return result;
+  } catch (e: any) {
+    console.error('Error generating filename:', e);
+    return { filename: 'analysis-bundle.md' }; // fallback
   }
 }

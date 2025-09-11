@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { AnalysisResult } from '@/app/actions';
+import { AnalysisResult, generateFilename } from '@/app/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AnalysisType } from '@/ai/flows/prompts';
 import Markdown from 'react-markdown';
@@ -16,6 +16,9 @@ interface AnalysisResultsProps {
   isLoading: boolean;
   error: string | null;
   selectedAnalyses: (typeof AnalysisType)[keyof typeof AnalysisType][];
+  transcript: string;
+  provider: 'google' | 'openai';
+  apiKey: string;
 }
 
 const downloadFile = (content: string, filename: string) => {
@@ -112,7 +115,7 @@ const analysisConfig: Record<(typeof AnalysisType)[keyof typeof AnalysisType], {
     communicationPatterns: { title: "Comm. Patterns", description: "Analysis of conversational dynamics.", icon: BarChartHorizontal, filename: "communication_patterns.md", contentKey: 'communicationPatterns', dataKey: (res) => (res.communicationPatterns && 'communicationPatterns' in res.communicationPatterns) ? res.communicationPatterns.communicationPatterns : undefined, errorKey: (res) => (res.communicationPatterns && 'error' in res.communicationPatterns) ? res.communicationPatterns.error : undefined },
 };
 
-export default function AnalysisResults({ results, isLoading, error, selectedAnalyses }: AnalysisResultsProps) {
+export default function AnalysisResults({ results, isLoading, error, selectedAnalyses, transcript, provider, apiKey }: AnalysisResultsProps) {
   if (error) {
     return (
         <Alert variant="destructive" className="shadow-md">
@@ -134,7 +137,7 @@ export default function AnalysisResults({ results, isLoading, error, selectedAna
     return (Object.keys(analysisConfig) as (typeof AnalysisType)[keyof typeof AnalysisType][]).filter(key => selectedAnalyses.includes(key));
   }, [selectedAnalyses]);
 
-  const handleDownloadAll = () => {
+  const handleDownloadAll = async () => {
     if (!results) return;
 
     const allContent = visibleTabs.map(type => {
@@ -147,7 +150,9 @@ export default function AnalysisResults({ results, isLoading, error, selectedAna
     }).filter(Boolean).join('\n\n---\n\n');
 
     if (allContent) {
-      downloadFile(allContent, 'analysis_bundle.md');
+      const filenameResult = await generateFilename(transcript, provider, apiKey);
+      const filename = 'error' in filenameResult ? 'analysis-bundle.md' : filenameResult.filename;
+      downloadFile(allContent, filename);
     }
   };
 

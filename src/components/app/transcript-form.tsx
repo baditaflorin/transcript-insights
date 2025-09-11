@@ -36,6 +36,9 @@ interface TranscriptFormProps {
   onReset: () => void;
   selectedAnalyses: AnalysisType[];
   setSelectedAnalyses: (analyses: AnalysisType[]) => void;
+  setTranscript: (transcript: string) => void;
+  setProvider: (provider: 'google' | 'openai') => void;
+  setApiKey: (apiKey: string) => void;
 }
 
 const analysisLabels: Record<AnalysisType, string> = {
@@ -54,7 +57,7 @@ const analysisLabels: Record<AnalysisType, string> = {
 };
 
 
-export default function TranscriptForm({ setResults, setIsLoading, isLoading, setError, onReset, selectedAnalyses, setSelectedAnalyses }: TranscriptFormProps) {
+export default function TranscriptForm({ setResults, setIsLoading, isLoading, setError, onReset, selectedAnalyses, setSelectedAnalyses, setTranscript, setProvider, setApiKey }: TranscriptFormProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('paste');
   const [fileName, setFileName] = useState('');
@@ -66,7 +69,8 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
     }
   });
 
-  const provider = form.watch('provider');
+  const providerValue = form.watch('provider');
+  const apiKeyValue = form.watch('apiKey');
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -107,6 +111,11 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
       }
     }
 
+    setTranscript(transcriptText);
+    setProvider(data.provider);
+    setApiKey(data.apiKey);
+
+
     if (!transcriptText.trim()) {
       const errorMessage = 'Please paste a transcript or upload a file.';
       toast({
@@ -132,7 +141,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
     }
     
     if (!data.apiKey) {
-      const errorMessage = `Please enter your ${provider === 'google' ? 'Google AI' : 'OpenAI'} API key.`;
+      const errorMessage = `Please enter your ${providerValue === 'google' ? 'Google AI' : 'OpenAI'} API key.`;
       toast({
         variant: 'destructive',
         title: 'API Key Required',
@@ -194,7 +203,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                    <Input
                      id="apiKey"
                      type="password"
-                     placeholder={provider === 'google' ? "Enter your Google AI API Key" : "Enter your OpenAI API Key"}
+                     placeholder={providerValue === 'google' ? "Enter your Google AI API Key" : "Enter your OpenAI API Key"}
                      {...form.register('apiKey')}
                    />
                  </div>

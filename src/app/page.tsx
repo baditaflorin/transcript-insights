@@ -17,6 +17,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedAnalyses, setSelectedAnalyses] = useState<(typeof analysisTypes)[number][]>(['summary', 'perspectives', 'actionItems', 'openQuestions', 'timeline', 'risks', 'opportunities', 'sentiment', 'decisions', 'stakeholders', 'knowledgeGaps', 'communicationPatterns']);
+  const [transcript, setTranscript] = useState('');
+  const [provider, setProvider] = useState<'google' | 'openai'>('google');
+  const [apiKey, setApiKey] = useState('');
+
 
   const handleReset = () => {
     setResults(null);
@@ -38,6 +42,9 @@ export default function Home() {
               onReset={handleReset}
               selectedAnalyses={selectedAnalyses}
               setSelectedAnalyses={setSelectedAnalyses}
+              setTranscript={setTranscript}
+              setProvider={setProvider}
+              setApiKey={setApiKey}
             />
           </div>
           <AnalysisResults
@@ -45,6 +52,9 @@ export default function Home() {
             isLoading={isLoading}
             error={error}
             selectedAnalyses={selectedAnalyses}
+            transcript={transcript}
+            provider={provider}
+            apiKey={apiKey}
           />
         </div>
       </main>
