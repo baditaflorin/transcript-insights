@@ -55,7 +55,7 @@ const toneAndSentimentFlow = ai.defineFlow(
     outputSchema: ToneAndSentimentOutputSchema,
   },
   async (input, onChunk) => {
-    const {stream, response} = prompt.stream(input);
+    const {stream, response} = await prompt.stream(input);
     if (onChunk) {
       for await (const chunk of stream) {
         onChunk(chunk);
