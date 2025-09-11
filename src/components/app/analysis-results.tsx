@@ -68,7 +68,7 @@ const ResultCard = ({ title, description, icon: Icon, content, filename, isLoadi
       </div>
     </CardHeader>
     <CardContent>
-      {isLoading && !content ? (
+      {isLoading ? (
         <div className="space-y-3">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
@@ -77,7 +77,7 @@ const ResultCard = ({ title, description, icon: Icon, content, filename, isLoadi
         </div>
       ) : (
         <div className="prose prose-sm max-w-none text-foreground/90 bg-muted/50 p-4 rounded-lg min-h-[100px]">
-          {content ? <Markdown>{content}</Markdown> : 'No content generated.'}
+          {content ? <Markdown>{content}</Markdown> : <p>No content generated. This might be because the analysis was not selected or the transcript did not contain relevant information for this category.</p>}
         </div>
       )}
     </CardContent>
@@ -163,6 +163,7 @@ export default function AnalysisResults({ results, streamingResults, isLoading, 
         {visibleTabs.map(type => {
             const config = analysisConfig[type];
             const content = displayResults ? config.dataKey(displayResults as AnalysisResult) : null;
+            const isTabLoading = isLoading && !content;
             return (
                 <TabsContent key={type} value={type} className="m-0">
                     <ResultCard
@@ -171,7 +172,7 @@ export default function AnalysisResults({ results, streamingResults, isLoading, 
                         icon={config.icon}
                         content={content || null}
                         filename={config.filename}
-                        isLoading={isLoading && !content}
+                        isLoading={isTabLoading}
                     />
                 </TabsContent>
             );
