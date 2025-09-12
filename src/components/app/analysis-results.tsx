@@ -65,7 +65,7 @@ const formatOpenQuestions = (openQuestions: { speaker: string; question: string 
 };
 
 const ResultCard = ({ title, description, icon: Icon, content, filename, isLoading, error }: { title: string, description: string, icon: React.ElementType, content: string | null, filename: string, isLoading: boolean, error: string | null }) => (
-  <Card className="h-full shadow-md">
+  <Card className="h-full shadow-lg">
     <CardHeader>
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4">
@@ -133,7 +133,7 @@ const analysisConfig: Record<(typeof AnalysisType)[keyof typeof AnalysisType], {
 export default function AnalysisResults({ results, isLoading, error, selectedAnalyses, transcript, provider, apiKey }: AnalysisResultsProps) {
   if (error) {
     return (
-        <Alert variant="destructive" className="shadow-md">
+        <Alert variant="destructive" className="shadow-lg">
             <AlertTriangle className="h-5 w-5" />
             <AlertTitle>Analysis Error</AlertTitle>
             <AlertDescription>
@@ -173,9 +173,9 @@ export default function AnalysisResults({ results, isLoading, error, selectedAna
 
   if (showPlaceholder) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
-        <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card shadow-md">
+        <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card shadow-lg">
           <div className="text-center text-muted-foreground">
             <p className="text-lg font-medium">Your insights are waiting</p>
             <p className="text-sm">Submit a transcript and select analyses to begin.</p>
@@ -189,9 +189,9 @@ export default function AnalysisResults({ results, isLoading, error, selectedAna
   
   if (visibleTabs.length === 0 && (isLoading || !error)) {
      return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
           <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
-          <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card shadow-md">
+          <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card shadow-lg">
             <div className="text-center text-muted-foreground">
               {isLoading ? (
                 <p className="text-lg font-medium">Analyzing...</p>
@@ -208,7 +208,7 @@ export default function AnalysisResults({ results, isLoading, error, selectedAna
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
         {results && !isLoading && (

@@ -171,7 +171,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
   };
 
   return (
-    <Card className="shadow-md">
+    <Card className="shadow-lg">
       <CardContent className="p-0">
         <form onSubmit={form.handleSubmit(onSubmit)}>
            <div className="p-6 space-y-4 border-b">
