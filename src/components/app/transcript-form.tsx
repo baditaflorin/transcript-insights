@@ -263,7 +263,7 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
                 </div>
               </div>
 
-              <Button type="submit" disabled={isLoading} className="w-full mt-6 h-12 text-base font-semibold bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button type="submit" disabled={isLoading} className="w-full mt-6 h-12 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90">
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />

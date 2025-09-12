@@ -175,7 +175,7 @@ export default function AnalysisResults({ results, isLoading, error, selectedAna
     return (
       <div className="flex flex-col gap-6">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
-        <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card">
+        <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card shadow-md">
           <div className="text-center text-muted-foreground">
             <p className="text-lg font-medium">Your insights are waiting</p>
             <p className="text-sm">Submit a transcript and select analyses to begin.</p>
@@ -191,7 +191,7 @@ export default function AnalysisResults({ results, isLoading, error, selectedAna
      return (
         <div className="flex flex-col gap-6">
           <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Analysis Output</h2>
-          <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card">
+          <div className="flex items-center justify-center h-full min-h-[400px] border-2 border-dashed rounded-lg bg-card shadow-md">
             <div className="text-center text-muted-foreground">
               {isLoading ? (
                 <p className="text-lg font-medium">Analyzing...</p>
