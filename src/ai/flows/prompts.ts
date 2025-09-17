@@ -193,7 +193,7 @@ export const defineOpportunitiesPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'opportunitiesAndIdeasPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: OpportunitiesAndIdeasOutputSchema},
-  prompt: `List all opportunities, ideas, or suggestions that came up in the conversation. Highlight which person suggested each idea and any next steps attached to it. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+prompt: `List all opportunities, ideas, or suggestions that came up in the conversation. Highlight which person suggested each idea and any next steps attached to it. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
 });
 
 export const defineSentimentPrompt = (ai: Genkit) => ai.definePrompt({

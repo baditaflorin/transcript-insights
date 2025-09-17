@@ -6,20 +6,18 @@ import type {
 } from '@/ai/flows/dynamic-analysis-flow';
 import {
   AnalysisType,
-} from '@/ai/flows/prompts';
-import type {
-  AnalyzeConversationPerspectivesOutput,
-  ExtractActionItemsOutput,
-  IdentifyOpenQuestionsOutput,
-  SummarizeTranscriptOutput,
-  TimelineOfKeyMomentsOutput,
-  RisksAndConcernsOutput,
-  OpportunitiesAndIdeasOutput,
-  ToneAndSentimentOutput,
-  KeyDecisionsOutput,
-  StakeholderMappingOutput,
-  KnowledgeGapsOutput,
-  CommunicationPatternsOutput,
+  type AnalyzeConversationPerspectivesOutput,
+  type ExtractActionItemsOutput,
+  type IdentifyOpenQuestionsOutput,
+  type SummarizeTranscriptOutput,
+  type TimelineOfKeyMomentsOutput,
+  type RisksAndConcernsOutput,
+  type OpportunitiesAndIdeasOutput,
+  type ToneAndSentimentOutput,
+  type KeyDecisionsOutput,
+  type StakeholderMappingOutput,
+  type KnowledgeGapsOutput,
+  type CommunicationPatternsOutput,
 } from '@/ai/flows/prompts';
 import { generateFilename as generateFilenameFlow } from '@/ai/flows/generate-filename-flow';
 import {z} from 'zod';
