@@ -16,7 +16,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { analysisTypes } from '@/app/page';
 import type { AnalysisType } from '@/ai/flows/prompts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const formSchema = z.object({
   transcript: z.string().optional(),
@@ -37,6 +37,10 @@ interface TranscriptFormProps {
   }) => void;
   selectedAnalyses: AnalysisType[];
   setSelectedAnalyses: (analyses: AnalysisType[]) => void;
+  apiKey: string;
+  setApiKey: (key: string) => void;
+  provider: 'google' | 'openai';
+  setProvider: (provider: 'google' | 'openai') => void;
 }
 
 const analysisLabels: Record<AnalysisType, string> = {
@@ -55,17 +59,37 @@ const analysisLabels: Record<AnalysisType, string> = {
 };
 
 
-export default function TranscriptForm({ isLoading, onAnalyze, selectedAnalyses, setSelectedAnalyses }: TranscriptFormProps) {
+export default function TranscriptForm({ 
+  isLoading, 
+  onAnalyze, 
+  selectedAnalyses, 
+  setSelectedAnalyses,
+  apiKey,
+  setApiKey,
+  provider,
+  setProvider,
+}: TranscriptFormProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('paste');
   const [fileName, setFileName] = useState('');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      provider: 'google',
+    values: {
+      apiKey,
+      provider,
+      transcript: '',
+      file: undefined,
     }
   });
+
+  useEffect(() => {
+    form.setValue('apiKey', apiKey);
+  }, [apiKey, form]);
+
+  useEffect(() => {
+    form.setValue('provider', provider);
+  }, [provider, form]);
 
   const providerValue = form.watch('provider');
   
@@ -78,9 +102,9 @@ export default function TranscriptForm({ isLoading, onAnalyze, selectedAnalyses,
   };
 
   const handleCopyApiKey = () => {
-    const apiKey = form.getValues('apiKey');
-    if (apiKey) {
-      navigator.clipboard.writeText(apiKey)
+    const currentApiKey = form.getValues('apiKey');
+    if (currentApiKey) {
+      navigator.clipboard.writeText(currentApiKey)
         .then(() => {
           toast({
             title: 'API Key Copied',
@@ -181,8 +205,8 @@ export default function TranscriptForm({ isLoading, onAnalyze, selectedAnalyses,
                     AI Provider
                   </Label>
                   <Select
-                    value={form.watch('provider')}
-                    onValueChange={(value) => form.setValue('provider', value as 'google' | 'openai')}
+                    value={provider}
+                    onValueChange={(value) => setProvider(value as 'google' | 'openai')}
                   >
                     <SelectTrigger id="provider">
                       <SelectValue placeholder="Select a provider" />
@@ -203,7 +227,8 @@ export default function TranscriptForm({ isLoading, onAnalyze, selectedAnalyses,
                        id="apiKey"
                        type="password"
                        placeholder={providerValue === 'google' ? "Enter your Google AI API Key" : "Enter your OpenAI API Key"}
-                       {...form.register('apiKey')}
+                       value={apiKey}
+                       onChange={(e) => setApiKey(e.target.value)}
                        className="flex-1"
                      />
                      <Button type="button" variant="outline" size="icon" onClick={handleCopyApiKey} aria-label="Copy API Key">

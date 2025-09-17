@@ -1,6 +1,6 @@
 "use client";
 
-import { useState }from 'react';
+import { useState, useEffect }from 'react';
 import Header from '@/components/app/header';
 import TranscriptForm from '@/components/app/transcript-form';
 import AnalysisResults from '@/components/app/analysis-results';
@@ -21,6 +21,32 @@ export default function Home() {
   const [transcript, setTranscript] = useState('');
   const [provider, setProvider] = useState<'google' | 'openai'>('google');
   const [apiKey, setApiKey] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedApiKey = localStorage.getItem('apiKey');
+      const savedProvider = localStorage.getItem('provider') as 'google' | 'openai' | null;
+
+      if (savedApiKey) {
+        setApiKey(savedApiKey);
+      }
+      if (savedProvider) {
+        setProvider(savedProvider);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('apiKey', apiKey);
+    }
+  }, [apiKey]);
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('provider', provider);
+    }
+  }, [provider]);
 
 
   const handleReset = () => {
@@ -78,6 +104,10 @@ export default function Home() {
               onAnalyze={handleAnalyze}
               selectedAnalyses={selectedAnalyses}
               setSelectedAnalyses={setSelectedAnalyses}
+              apiKey={apiKey}
+              setApiKey={setApiKey}
+              provider={provider}
+              setProvider={setProvider}
             />
           </div>
           <AnalysisResults
