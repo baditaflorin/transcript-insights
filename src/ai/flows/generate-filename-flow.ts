@@ -23,7 +23,7 @@ export async function generateFilename(
 ): Promise<GenerateFilenameOutput> {
   const {provider, apiKey} = input;
   const dynamicAi = configureAi(provider, apiKey);
-  const model = provider === 'openai' ? 'openai/gpt-4o-mini' : 'google/gemini-1.5-flash';
+  const model = provider === 'openai' ? 'openai/gpt-4o-mini' : 'google/gemini-1.5-flash-latest';
 
   const FilenamePrompt = dynamicAi.definePrompt(
     {
