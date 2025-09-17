@@ -6,6 +6,7 @@ import TranscriptForm from '@/components/app/transcript-form';
 import AnalysisResults from '@/components/app/analysis-results';
 import {
   AnalysisResult,
+  analyzeTranscript,
 } from './actions';
 import { AnalysisType } from '@/ai/flows/prompts';
 
@@ -26,6 +27,37 @@ export default function Home() {
     setResults(null);
     setError(null);
   };
+  
+  const handleAnalyze = async (formData: {
+    transcript: string;
+    provider: 'google' | 'openai';
+    apiKey: string;
+    selectedAnalyses: AnalysisType[];
+  }) => {
+    handleReset();
+    setIsLoading(true);
+    setTranscript(formData.transcript);
+    setProvider(formData.provider);
+    setApiKey(formData.apiKey);
+
+    const result = await analyzeTranscript(
+      formData.transcript,
+      formData.selectedAnalyses,
+      formData.provider,
+      formData.apiKey
+    );
+
+    if (result && 'error' in result) {
+      setError(result.error);
+      setResults(null);
+    } else {
+      setResults(result as AnalysisResult);
+      setError(null);
+    }
+
+    setIsLoading(false);
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -42,16 +74,10 @@ export default function Home() {
           <div className="flex flex-col gap-8">
             <h2 className="text-2xl font-semibold tracking-tight text-foreground/90">Input Transcript</h2>
             <TranscriptForm
-              setResults={setResults}
-              setIsLoading={setIsLoading}
               isLoading={isLoading}
-              setError={setError}
-              onReset={handleReset}
+              onAnalyze={handleAnalyze}
               selectedAnalyses={selectedAnalyses}
               setSelectedAnalyses={setSelectedAnalyses}
-              setTranscript={setTranscript}
-              setProvider={setProvider}
-              setApiKey={setApiKey}
             />
           </div>
           <AnalysisResults

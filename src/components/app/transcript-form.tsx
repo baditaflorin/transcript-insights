@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { analyzeTranscript, type AnalysisResult } from '@/app/actions';
 import { Card, CardContent } from '@/components/ui/card';
 import { analysisTypes } from '@/app/page';
 import type { AnalysisType } from '@/ai/flows/prompts';
@@ -29,16 +28,15 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface TranscriptFormProps {
-  setResults: (results: AnalysisResult | null) => void;
-  setIsLoading: (isLoading: boolean) => void;
   isLoading: boolean;
-  setError: (error: string | null) => void;
-  onReset: () => void;
+  onAnalyze: (data: {
+    transcript: string;
+    provider: 'google' | 'openai';
+    apiKey: string;
+    selectedAnalyses: AnalysisType[];
+  }) => void;
   selectedAnalyses: AnalysisType[];
   setSelectedAnalyses: (analyses: AnalysisType[]) => void;
-  setTranscript: (transcript: string) => void;
-  setProvider: (provider: 'google' | 'openai') => void;
-  setApiKey: (apiKey: string) => void;
 }
 
 const analysisLabels: Record<AnalysisType, string> = {
@@ -57,7 +55,7 @@ const analysisLabels: Record<AnalysisType, string> = {
 };
 
 
-export default function TranscriptForm({ setResults, setIsLoading, isLoading, setError, onReset, selectedAnalyses, setSelectedAnalyses, setTranscript, setProvider, setApiKey }: TranscriptFormProps) {
+export default function TranscriptForm({ isLoading, onAnalyze, selectedAnalyses, setSelectedAnalyses }: TranscriptFormProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('paste');
   const [fileName, setFileName] = useState('');
@@ -70,7 +68,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
   });
 
   const providerValue = form.watch('provider');
-  const apiKeyValue = form.watch('apiKey');
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -88,9 +85,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
   };
 
   const onSubmit = async (data: FormValues) => {
-    onReset();
-    setIsLoading(true);
-
     let transcriptText = '';
 
     if (activeTab === 'paste') {
@@ -105,16 +99,9 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
           title: 'Error reading file',
           description: errorMessage,
         });
-        setError(errorMessage);
-        setIsLoading(false);
         return;
       }
     }
-
-    setTranscript(transcriptText);
-    setProvider(data.provider);
-    setApiKey(data.apiKey);
-
 
     if (!transcriptText.trim()) {
       const errorMessage = 'Please paste a transcript or upload a file.';
@@ -123,8 +110,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
         title: 'Input required',
         description: errorMessage,
       });
-      setError(errorMessage);
-      setIsLoading(false);
       return;
     }
     
@@ -135,8 +120,6 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
         title: 'Analysis Required',
         description: errorMessage,
       });
-      setError(errorMessage);
-      setIsLoading(false);
       return;
     }
     
@@ -147,27 +130,15 @@ export default function TranscriptForm({ setResults, setIsLoading, isLoading, se
         title: 'API Key Required',
         description: errorMessage,
       });
-      setError(errorMessage);
-      setIsLoading(false);
       return;
     }
 
-
-    const result = await analyzeTranscript(transcriptText, selectedAnalyses, data.provider, data.apiKey);
-
-    if (result && 'error' in result) {
-      toast({
-        variant: 'destructive',
-        title: 'Analysis Failed',
-        description: 'An unexpected error occurred. See details below.',
-      });
-      setError(result.error);
-      setResults(null);
-    } else {
-      setResults(result as AnalysisResult);
-      setError(null);
-    }
-    setIsLoading(false);
+    onAnalyze({
+      transcript: transcriptText,
+      provider: data.provider,
+      apiKey: data.apiKey,
+      selectedAnalyses,
+    });
   };
 
   return (
