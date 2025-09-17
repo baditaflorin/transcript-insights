@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Loader2, Upload, KeyRound, BrainCircuit } from 'lucide-react';
+import { Loader2, Upload, KeyRound, BrainCircuit, Copy } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -74,6 +74,33 @@ export default function TranscriptForm({ isLoading, onAnalyze, selectedAnalyses,
     if (file) {
       setFileName(file.name);
       form.setValue('file', file);
+    }
+  };
+
+  const handleCopyApiKey = () => {
+    const apiKey = form.getValues('apiKey');
+    if (apiKey) {
+      navigator.clipboard.writeText(apiKey)
+        .then(() => {
+          toast({
+            title: 'API Key Copied',
+            description: 'The API key has been copied to your clipboard.',
+          });
+        })
+        .catch(err => {
+          toast({
+            variant: 'destructive',
+            title: 'Failed to Copy',
+            description: 'Could not copy the API key to the clipboard.',
+          });
+          console.error('Failed to copy text: ', err);
+        });
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'API Key Missing',
+            description: 'There is no API key to copy.',
+        });
     }
   };
   
@@ -171,12 +198,18 @@ export default function TranscriptForm({ isLoading, onAnalyze, selectedAnalyses,
                     <KeyRound className="inline-block mr-2 h-4 w-4" />
                      API Key (Required)
                    </Label>
-                   <Input
-                     id="apiKey"
-                     type="password"
-                     placeholder={providerValue === 'google' ? "Enter your Google AI API Key" : "Enter your OpenAI API Key"}
-                     {...form.register('apiKey')}
-                   />
+                   <div className="flex items-center gap-2">
+                     <Input
+                       id="apiKey"
+                       type="password"
+                       placeholder={providerValue === 'google' ? "Enter your Google AI API Key" : "Enter your OpenAI API Key"}
+                       {...form.register('apiKey')}
+                       className="flex-1"
+                     />
+                     <Button type="button" variant="outline" size="icon" onClick={handleCopyApiKey} aria-label="Copy API Key">
+                       <Copy className="h-4 w-4" />
+                     </Button>
+                   </div>
                  </div>
               </div>
            </div>
