@@ -228,5 +228,5 @@ export const defineCommunicationPatternsPrompt = (ai: Genkit) => ai.definePrompt
   name: 'communicationPatternsPrompt',
   input: { schema: TranscriptInputSchema },
   output: { schema: CommunicationPatternsOutputSchema },
-  prompt: `Analyze speaking time distribution, interruption patterns, agreement/disagreement frequencies, and influence dynamics between participants from the transcript. This provides insights into team dynamics and communication effectiveness. Format as Markdown.\n\nTranscript:\n{{transcript}}`,
+  prompt: `Analyze speaking time distribution, interruption patterns, and agreement/disagreement frequencies, and influence dynamics between participants from the transcript. Provide the analysis in Markdown format within a JSON object, under the key 'communicationPatterns'.\n\nTranscript:\n{{transcript}}`,
 });
