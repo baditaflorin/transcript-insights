@@ -42,18 +42,18 @@ export async function run(
   
   // Define prompts for each analysis type using the dynamic AI instance
   const prompts = {
-    summary: defineSummaryPrompt(dynamicAi),
-    perspectives: definePerspectivesPrompt(dynamicAi),
-    actionItems: defineActionItemsPrompt(dynamicAi),
-    openQuestions: defineOpenQuestionsPrompt(dynamicAi),
-    timeline: defineTimelinePrompt(dynamicAi),
-    risks: defineRisksPrompt(dynamicAi),
-    opportunities: defineOpportunitiesPrompt(dynamicAi),
-    sentiment: defineSentimentPrompt(dynamicAi),
-    decisions: defineDecisionsPrompt(dynamicAi),
-    stakeholders: defineStakeholdersPrompt(dynamicAi),
-    knowledgeGaps: defineKnowledgeGapsPrompt(dynamicAi),
-    communicationPatterns: defineCommunicationPatternsPrompt(dynamicAi),
+    [AnalysisType.SUMMARY]: defineSummaryPrompt(dynamicAi),
+    [AnalysisType.PERSPECTIVES]: definePerspectivesPrompt(dynamicAi),
+    [AnalysisType.ACTION_ITEMS]: defineActionItemsPrompt(dynamicAi),
+    [AnalysisType.OPEN_QUESTIONS]: defineOpenQuestionsPrompt(dynamicAi),
+    [AnalysisType.TIMELINE]: defineTimelinePrompt(dynamicAi),
+    [AnalysisType.RISKS]: defineRisksPrompt(dynamicAi),
+    [AnalysisType.OPPORTUNITIES]: defineOpportunitiesPrompt(dynamicAi),
+    [AnalysisType.SENTIMENT]: defineSentimentPrompt(dynamicAi),
+    [AnalysisType.DECISIONS]: defineDecisionsPrompt(dynamicAi),
+    [AnalysisType.STAKEHOLDERS]: defineStakeholdersPrompt(dynamicAi),
+    [AnalysisType.KNOWLEDGE_GAPS]: defineKnowledgeGapsPrompt(dynamicAi),
+    [AnalysisType.COMMUNICATION_PATTERNS]: defineCommunicationPatternsPrompt(dynamicAi),
   };
 
 

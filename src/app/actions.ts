@@ -67,7 +67,7 @@ export type AnalysisResult = {
 
 export async function analyzeTranscript(
   transcript: string,
-  selectedAnalyses: (typeof AnalysisType)[keyof typeof AnalysisType][],
+  selectedAnalyses: AnalysisType[],
   provider: 'google' | 'openai',
   apiKey: string,
 ): Promise<AnalysisResult | {error: string}> {

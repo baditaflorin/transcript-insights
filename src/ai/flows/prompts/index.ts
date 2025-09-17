@@ -23,15 +23,15 @@ export const AnalysisType = {
 export type AnalysisType = (typeof AnalysisType)[keyof typeof AnalysisType];
 
 
-export * from './prompts/summary';
-export * from './prompts/perspectives';
-export * from './prompts/action-items';
-export * from './prompts/open-questions';
-export * from './prompts/timeline';
-export * from './prompts/risks';
-export * from './prompts/opportunities';
-export * from './prompts/sentiment';
-export * from './prompts/decisions';
-export * from './prompts/stakeholders';
-export * from './prompts/knowledge-gaps';
-export * from './prompts/communication-patterns';
+export * from './summary';
+export * from './perspectives';
+export * from './action-items';
+export * from './open-questions';
+export * from './timeline';
+export * from './risks';
+export * from './opportunities';
+export * from './sentiment';
+export * from './decisions';
+export * from './stakeholders';
+export * from './knowledge-gaps';
+export * from './communication-patterns';
