@@ -200,7 +200,7 @@ export const defineSentimentPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'toneAndSentimentPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: ToneAndSentimentOutputSchema},
-  prompt: `Analyze the overall tone and sentiment of the conversation from the provided transcript. Describe how each speaker felt during the conversation (e.g., positive, neutral, concerned, enthusiastic) and support your analysis with evidence from their words. Provide the analysis in Markdown format within a JSON object, under the key 'sentiment'.\n\nTranscript:\n{{transcript}}`,
+  prompt: `Analyze the overall tone and sentiment of the conversation from the provided transcript. Your response should be a JSON object with a single key, "sentiment", which contains the full analysis in Markdown format. Describe how each speaker felt (e.g., positive, neutral, concerned) and support your analysis with evidence from their words.\n\nTranscript:\n{{transcript}}`,
 });
 
 export const defineDecisionsPrompt = (ai: Genkit) => ai.definePrompt({
@@ -228,5 +228,5 @@ export const defineCommunicationPatternsPrompt = (ai: Genkit) => ai.definePrompt
   name: 'communicationPatternsPrompt',
   input: { schema: TranscriptInputSchema },
   output: { schema: CommunicationPatternsOutputSchema },
-  prompt: `Analyze speaking time distribution, interruption patterns, and agreement/disagreement frequencies, and influence dynamics between participants from the transcript. Provide the analysis in Markdown format within a JSON object, under the key 'communicationPatterns'.\n\nTranscript:\n{{transcript}}`,
+  prompt: `Analyze speaking time distribution, interruption patterns, and agreement/disagreement frequencies from the transcript. Your response should be a JSON object with a single key, "communicationPatterns", which contains the full analysis in Markdown format.\n\nTranscript:\n{{transcript}}`,
 });
