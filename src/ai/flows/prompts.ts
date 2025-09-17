@@ -200,7 +200,7 @@ export const defineSentimentPrompt = (ai: Genkit) => ai.definePrompt({
   name: 'toneAndSentimentPrompt',
   input: {schema: TranscriptInputSchema},
   output: {schema: ToneAndSentimentOutputSchema},
-  prompt: `Analyze the overall tone and sentiment of the conversation. Describe how each speaker felt during the conversation (positive, neutral, concerned, skeptical, enthusiastic, etc.) and support with evidence from their words. Format your response as Markdown.\n\nTranscript:\n{{transcript}}`,
+  prompt: `Analyze the overall tone and sentiment of the conversation from the provided transcript. Describe how each speaker felt during the conversation (e.g., positive, neutral, concerned, enthusiastic) and support your analysis with evidence from their words. Provide the analysis in Markdown format within a JSON object, under the key 'sentiment'.\n\nTranscript:\n{{transcript}}`,
 });
 
 export const defineDecisionsPrompt = (ai: Genkit) => ai.definePrompt({
