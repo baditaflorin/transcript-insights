@@ -9,15 +9,16 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Ensure the public directory exists before building
-RUN mkdir -p public
 RUN npm run build
 
 # Stage 3: Production
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV production
+# Configure Next.js to run on 4322
+ENV PORT 4322
 
+# Copy standalone build
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
