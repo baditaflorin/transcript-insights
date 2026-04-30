@@ -13,8 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
-import { analysisTypes } from '@/app/page';
-import type { AnalysisType } from '@/ai/flows/prompts';
+import { AnalysisType } from '@/ai/flows/prompts';
+
+const analysisTypes = Object.values(AnalysisType);
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { useEffect, useState } from 'react';
 

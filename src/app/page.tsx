@@ -11,7 +11,7 @@ import {
 import { AnalysisType } from '@/ai/flows/prompts';
 
 
-export const analysisTypes = Object.values(AnalysisType);
+const analysisTypes = Object.values(AnalysisType);
 
 export default function Home() {
   const [results, setResults] = useState<AnalysisResult | null>(null);

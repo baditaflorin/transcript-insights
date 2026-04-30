@@ -3,7 +3,7 @@
  */
 
 import {genkit, type Genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
+import {googleAI} from '@genkit-ai/google-genai';
 import {openAI} from 'genkitx-openai';
 
 export function configureAi(provider: 'google' | 'openai', apiKey: string): Genkit {
